@@ -64,6 +64,8 @@ Both scenarios produced **zero violations** with perfect statistical calibration
 
 All synthetic parameters grounded in the latest 2025 WERC DC Measures Report and CSCMP State of Logistics Report. Full references included in the project files.
 
+## Initial flawed attempts: Black-Scholes/Merton jump-diffusion for loss estimation (early overestimation ~$42M → discarded after math redo).
+
 ## Conclusion
 
 This project demonstrates technical mastery of advanced statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate operational value in retail, e-commerce, or 3PL environments.
