@@ -32,12 +32,10 @@ The pipeline consists of nine rigorously linked stages:
 5. **Monte-Carlo Value-at-Risk & Expected-Shortfall** – 10 000 annual paths, VaR95/99, ES95.  
 6. **Causal Validation** – Propensity-score matching + quantile regression.  
 7. **Temporal Dependence & Forecasting** – Hawkes self-exciting process + Bayesian Structural Time Series.  
-8. **Purged Expanding-Window Backtesting** – Kupiec and Christoffersen tests (zero violations, p = 1.0000).  
+8. **Purged Expanding-Window Backtesting** – Kupiec and Christoffersen tests.  
 9. **Reporting & Stress Interpretation** – Actionable mitigation dashboard.
 
-## Backtesting Results & Financial Impact
-
-Both scenarios produced **zero violations** with perfect statistical calibration.  
+## Backtesting Results & Financial Impact  
 
 **Warehouse Management Implications**  
 - Realistic (netted) operations: expected annual preventable dragon loss of **£77,459** (MC ES95) at 95th-percentile SLA.  
@@ -68,7 +66,7 @@ All synthetic parameters grounded in the latest 2025 WERC DC Measures Report and
 
 ## Conclusion
 
-This project demonstrates technical mastery of advanced statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate operational value in retail, e-commerce, or 3PL environments.
+This project demonstrates technical statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate operational value in retail, e-commerce, or 3PL environments.
 
 ---
 
