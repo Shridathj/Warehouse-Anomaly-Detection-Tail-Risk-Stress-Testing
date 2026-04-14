@@ -50,7 +50,7 @@ The pipeline consists of nine rigorously linked stages:
 - `notebooks/` – Exploratory analysis and interactive visualisations  
 - `data/` – Raw and cleaned UCI Online Retail dataset  
 - `reports/` – Full technical report, backtesting results, and dashboards  
-- `results/` – VaR/ES outputs and mitigation scenarios  
+- `results/` – The plots and the expected numeric results of both scenarios are included
 
 ## Technologies
 
