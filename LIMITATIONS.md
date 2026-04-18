@@ -10,7 +10,7 @@ This is a public portfolio project built with only 374 days of open-source retai
 - GPD and Hawkes fitted on full sample rather than rolling/purged.
 - BSTS uses conservative fixed Q/R priors.
 
-These are deliberate trade-offs given data constraints and time. For more robustness and accuracy, the following integrations would be made:
+These are deliberate trade-offs given data constraints, compute and time. For more robustness and accuracy, the following integrations would be made:
 - Integrate Hawkes intensity directly into MC paths via thinning.
 - Run daily rolling backtests + bootstrap.
 - Add balance diagnostics, double-robust estimation, and clustering.
