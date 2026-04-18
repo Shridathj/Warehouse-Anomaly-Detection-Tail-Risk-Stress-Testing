@@ -1,4 +1,4 @@
-## Limitations & Trade-offs Important)
+## Limitations & Trade-offs 
 
 This is a public portfolio project built with only 374 days of open-source retail data.
 
