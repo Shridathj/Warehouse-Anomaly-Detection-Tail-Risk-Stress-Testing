@@ -10,16 +10,19 @@ This project quantifies the preventable financial loss arising from extreme high
 
 ## Summary
 
-The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a complete, auditable framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by perfect backtesting calibration.
+The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a complete, auditable framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting calibration.
 
 ## Project Overview & Data
 
-The analysis uses the real UCI Online Retail dataset. After cleaning (positive quantity & unit price, non-missing CustomerID, removal of miscellaneous codes), two parallel scenarios were created:
+Owing to the proprietary nature of live warehouse transaction and fulfilment data, the publicly available UCI Online Retail dataset (2010–2011) was selected as the closest realistic proxy, with delays synthetically calibrated to 2025 industry benchmarks.
+After cleaning (positive quantity & unit price, non-missing CustomerID, removal of miscellaneous codes), two parallel scenarios were created:
 
 - **Scenario 1 (Maximum Exposure)**: Gross demand with no netting of refunds/cancellations.  
 - **Scenario 2 (Realistic Netted Exposure)**: Full CustomerID–SKU netting to reflect actual fulfilled demand.
 
 Value-biased synthetic delays (18 % surge + 0.025–0.032 % dragon tier) were overlaid using log-normal distributions calibrated to 2025 WERC/CSCMP benchmarks. Holding costs calculated at 25 % APR.
+
+## Kaggle Notebook: https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing
 
 ## Detailed Methodology
 
@@ -51,6 +54,7 @@ The pipeline consists of nine rigorously linked stages:
 - `data/` – Raw and cleaned UCI Online Retail dataset  
 - `reports/` – Full technical report, backtesting results, and dashboards  
 - `results/` – The plots and the expected numeric results of both scenarios are included
+- To execute the full pipeline, run `notebooks/run_src.py`
 
 ## Technologies
 
