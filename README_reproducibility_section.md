@@ -47,7 +47,7 @@ data/
 Use the top-level runner to execute both scenarios end-to-end:
 
 ```bash
-python run_src.py
+python notebook/run_src.py
 ```
 
 Or run each scenario individually:
@@ -97,3 +97,4 @@ jupyter notebook notebooks/
 | openpyxl | 3.1.5 |
 
 > All results were produced on this exact stack. Minor numerical differences may occur across operating systems due to floating-point handling in Monte Carlo sampling.
+> For more clean viewing, visit the kaggle notebook: https://www.kaggle.com/prnavjoshi/code
