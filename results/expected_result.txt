@@ -253,9 +253,11 @@ HAWKES α=0.990 | 30-DAY FORECAST: 1.5 | TARGET: 0
 SCENARIO 1 BACKTEST
 Loaded 397,884 positive transactions | £8,911,408 gross revenue | 2010-12-01 → 2011-12-09
 Simulation done → 127 dragons (0.0319%) | 66 SLA breaches
+  Window end: 2011-07-17 | Annual ES95: £464,863 | Window VaR95 (3d): £8,421 | Realised: £0
 
 GPD fit: ξ=0.0480  β=30440.76  |  VaR95_GPD=£3,990,  ES95_GPD=£35,966
-Backtest: 0/6 violations (0.0%) | Kupiec p=1.0000 | Christoffersen p=1.0000
+Backtest: 0/34 violations (0.0%) | Kupiec p=1.0000 | Christoffersen p=1.0000
+
 
   P&L SUMMARY  (Scenario 1 – Positive Quantities Only)
 
@@ -263,14 +265,14 @@ Metric                                                      Value  % Gross
 Annualised Gross Revenue                           £   8,720,279
 GPD ES95  (daily tail, annualised)                 £      35,966    0.41%  ← headline
 GPD VaR95 (daily tail)                             £       3,990    0.05%
-MC  ES95  (annual, last backtest window)           £     267,186    3.06%
-MC  VaR95 (annual, last backtest window)           £     239,645    2.75%
-Margin impact (30% GM × MC ES95)                   £      80,156    0.92%
-5-Year projected bleed (no action)                 £   1,335,928
+MC  ES95  (annual, last backtest window)           £     248,220    2.85%
+MC  VaR95 (annual, last backtest window)           £     224,246    2.57%
+Margin impact (30% GM × MC ES95)                   £      74,466    0.85%
+5-Year projected bleed (no action)                 £   1,241,098
 Annual bleed — tail scenario (99th pctile day ×252) £   1,005,366
 Annual bleed — moderate (95th pctile day ×252)     £     151,282
 Backtest horizon                                   Window-matched VaR (FIXED)
-Backtest violations                                           0 / 6
+Backtest violations                                           0 / 34
 Kupiec p-value                                             1.0000  calibrated
 Christoffersen p-value                                     1.0000  independent
 --------------------------------------------------
@@ -280,9 +282,10 @@ POT threshold u (99th pctile daily loss)           £       3,990
 Exceedances above threshold                                   4
 ==================================================
 
-  In a bad year, preventable dragon loss ≈ £267,186 (MC ES95).
+  In a bad year, preventable dragon loss ≈ £248,220 (MC ES95).
   Tail scenario daily ×252 trading days → £1,005,366 bleed.
-  Backtest: 0 violations in 6 windows (0.0%) — model is stable.
+  Backtest: 0 violations in 34 windows (0.0%) — model is stable.
+
 
 ANOMALY DETECTION PIPELINE - SCENARIO 2 (NETTED)
 SCENARIO 2 (NETTED): 265,210 rows after netting (397,884 gross picks, 8,905 cancellations removed)
@@ -526,7 +529,7 @@ SCENARIO 2 BACKTEST
 Simulation -> 66 dragons (0.0249%) | 17 SLA breaches
 
 GPD fit (Scenario 2 NETTED): ξ=-0.0881 β=5829.39, VaR95_GPD=£1,745 ES95_GPD=£7,102
-Backtest: 0/6 violations (0.0%), Kupiec p=1.0000, Christoffersen p=1.0000
+Backtest: 2/33 violations (6.1%), Kupiec p=0.7864, Christoffersen p=0.6054
 
 P&L SUMMARY 
 
@@ -541,11 +544,11 @@ Margin impact (30% GM × MC ES95)                   £      23,238    0.29%
 Annual bleed — tail scenario (99th pctile day ×252) £     439,753
 Annual bleed — moderate (95th pctile day ×252)     £         709
 Backtest horizon                                   Window-matched VaR (FIXED)
-Backtest violations                                           0 / 6
-Kupiec p-value                                             1.0000 calibrated
-Christoffersen p-value                                     1.0000 independent
+Backtest violations                                           2 / 33
+Kupiec p-value                                             0.7864 calibrated
+Christoffersen p-value                                     0.6054 independent
 ==================================================
 
- In a bad year, preventable dragon loss approx: £77,459 (MC ES95).
+ In a bad year, preventable dragon loss approx: £75,001 (MC ES95).
  Tail scenario daily ×252 trading days -> £439,753 bleed.
- Backtest: 0 violations in 6 windows (0.0%) — model is stable.
+ Backtest: 2 violations in 33 windows (6.1%) — model is stable.
