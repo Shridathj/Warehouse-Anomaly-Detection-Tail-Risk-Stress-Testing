@@ -10,7 +10,7 @@ This project quantifies the preventable financial loss arising from extreme high
 
 ## Summary
 
-The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a complete, auditable framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting calibration.
+The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting calibration.
 
 ## Note on backtesting results:
 
@@ -18,7 +18,7 @@ Scenario 1 (Gross): 0/34 violations (0.0%, Kupiec p=1.00, Christoffersen p=1.00)
 Scenario 2 (Netted): 2/33 violations (6.1%, Kupiec p=0.79, Christoffersen p=0.61).
 Reason:
 Scenario 1 uses a harsher framing - no netting, stricter 4-hour SLA breach threshold (240 min vs 360 min), longer dragon delays (420 min vs 360 min), and stronger value bias (1.35 vs 1.20). This produces a heavier loss tail, so the model sets higher VaR/ES thresholds and appears “perfectly calibrated” (0 violations).
-Scenario 2 uses realistic netting and more lenient parameters, resulting in a smoother loss distribution and a decent violation rate (6.1%). This backtest has proper statistical power and is the primary operational model.
+Scenario 2 uses realistic netting and more lenient parameters, resulting in a smoother loss distribution and a decent violation rate (6.1%). This backtest has decent statistical power and is the primary operational model (due to the small dataset, the statistical power of these tests are weak).
 
 ## Project Overview & Data
 
@@ -79,6 +79,12 @@ All synthetic parameters grounded in the latest 2025 WERC DC Measures Report and
 ## Conclusion
 
 This project demonstrates technical statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate operational value in retail, e-commerce, or 3PL environments.
+
+This is an *undergraduate research/ portfolio project* built under real constraints.
+All financial figures are under stated assumptions and are directional/illustrative only.  
+*Do not treat the results as validated or suitable for operational decisions.*  
+Full honest framing, limitations, and scope are documented in the updated summary:  
+*project_report/updated_anomaly_summary.pdf*
 
 ---
 
