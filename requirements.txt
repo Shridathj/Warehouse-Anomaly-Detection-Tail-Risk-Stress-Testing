@@ -8,5 +8,3 @@ numba>=0.60.0
 scikit-learn>=1.5.0
 seaborn>=0.13.0
 openpyxl>=3.1.0
-PyMC>=5.x
-PyStan>=3.x
