@@ -62,12 +62,12 @@ The pipeline consists of nine rigorously linked stages:
 - `data/` – Raw and cleaned UCI Online Retail dataset  
 - `reports/` – Full technical report, backtesting results, and dashboards  
 - `results/` – The plots and the expected numeric results of both scenarios are included
-- To execute the full pipeline, run `notebooks/run_src.py`
+- To execute the full pipeline, install requirements 'pip install -r requirements.txt' and then, run `notebooks/run_src.py`
 
 ## Technologies
 
 - **Core**: Python 3, pandas, NumPy, SciPy, statsmodels  
-- **Advanced**: PyMC3 / PyStan (for BSTS), Hawkes process implementation, scikit-learn (PSM), extreme-value modelling libraries  
+- **Advanced**: PyMC / PyStan (for BSTS), Hawkes process implementation, scikit-learn (PSM), extreme-value modelling libraries  
 - **Visualisation**: Plotly, Matplotlib, Seaborn  
 
 ## Parameter Calibration & References
