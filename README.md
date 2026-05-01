@@ -12,6 +12,14 @@ This project quantifies the preventable financial loss arising from extreme high
 
 The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a complete, auditable framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting calibration.
 
+# Note on backtesting results:
+
+Scenario 1 (Gross): 0/34 violations (0.0%, Kupiec p=1.00, Christoffersen p=1.00).
+Scenario 2 (Netted): 2/33 violations (6.1%, Kupiec p=0.79, Christoffersen p=0.61).
+Reason:
+Scenario 1 uses a harsher framing - no netting, stricter 4-hour SLA breach threshold (240 min vs 360 min), longer dragon delays (420 min vs 360 min), and stronger value bias (1.35 vs 1.20). This produces a heavier loss tail, so the model sets higher VaR/ES thresholds and appears “perfectly calibrated” (0 violations).
+Scenario 2 uses realistic netting and more lenient parameters, resulting in a smoother loss distribution and a decent violation rate (6.1%). This backtest has proper statistical power and is the primary operational model.
+
 ## Project Overview & Data
 
 Owing to the proprietary nature of live warehouse transaction and fulfilment data, the publicly available UCI Online Retail dataset (2010–2011) was selected as the closest realistic proxy, with delays synthetically calibrated to 2025 industry benchmarks.
