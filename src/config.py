@@ -51,9 +51,9 @@ SCENARIO_CONFIGS = {
 
 # Backtest configuration 
 BACKTEST_CONFIG = {
-    "MIN_TRAIN_DAYS": 180,  # Minimum training window
-    "WINDOW_STEP": 30,  # Purged expanding window step 
-    "PURGE_GAP": 14,  # Gap between train cutoff and window end 
+    "MIN_TRAIN_DAYS": 90,  # Minimum training window
+    "WINDOW_STEP": 7,  # Purged expanding window step 
+    "PURGE_GAP": 3,  # Gap between train cutoff and window end 
 }
 
 # Causal inference configuration 
