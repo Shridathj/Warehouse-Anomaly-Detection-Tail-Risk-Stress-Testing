@@ -10,7 +10,7 @@ This project quantifies the preventable financial loss arising from extreme high
 
 ## Summary
 
-The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting (shows acceptable violation rates under the stated assumptions). (Values are for directioanl purposes only).
+The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting (shows acceptable violation rates under the stated assumptions). (Values are for directional purposes only).
 
 ## Note on backtesting results:
 
