@@ -6,11 +6,11 @@ April 2026
 
 ## Abstract
 
-This project quantifies the preventable financial loss arising from extreme high-value “dragon” orders (99th-percentile transactions) when warehouse fulfilment service levels degrade from the 99th to the 95th percentile. Using the UCI Online Retail dataset (541 000 raw rows, 3 665 SKUs, £8.9 M gross revenue over 374 days), two complementary scenarios were modelled: **gross (maximum exposure)** and **netted (realistic after cancellations)**. Realistic delays were simulated using industry-calibrated parameters from the 2025 WERC DC Measures Report and CSCMP State of Logistics Report. The end-to-end pipeline combines extreme-value theory, Monte-Carlo simulation, causal inference, Hawkes processes, and Bayesian Structural Time Series forecasting. Backtesting confirms model stability. Maintaining 99th-percentile SLA reduces exposure to near zero. All parameters and outputs are rigorously benchmarked and referenced.
+This project quantifies the preventable financial loss arising from extreme high-value “dragon” orders (99th-percentile transactions) when warehouse fulfilment service levels degrade from the 99th to the 95th percentile. Using the UCI Online Retail dataset (541 000 raw rows, 3 665 SKUs, £8.9 M gross revenue over 374 days), two complementary scenarios were modelled: **gross (maximum exposure)** and **netted (realistic after cancellations)**. Realistic delays were simulated using industry parameters(educated guesses) from the 2025 WERC DC Measures Report and CSCMP State of Logistics Report. The end-to-end pipeline combines extreme-value theory, Monte-Carlo simulation, causal inference, Hawkes processes, and Bayesian Structural Time Series forecasting. Backtesting confirms model stability. Maintaining 99th-percentile SLA reduces exposure to near zero. All parameters and outputs are rigorously benchmarked and referenced.
 
 ## Summary
 
-The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting calibration.
+The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting calibration. (Values are for directioanl purposes only).
 
 ## Note on backtesting results:
 
@@ -78,7 +78,7 @@ All synthetic parameters grounded in the latest 2025 WERC DC Measures Report and
 
 ## Conclusion
 
-This project demonstrates technical statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate operational value in retail, e-commerce, or 3PL environments.
+This project demonstrates technical statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate (simulated) operational value in retail, e-commerce, or 3PL environments.
 
 This is an *undergraduate research/ portfolio project* built under real constraints.
 All financial figures are under stated assumptions and are directional/illustrative only.  
