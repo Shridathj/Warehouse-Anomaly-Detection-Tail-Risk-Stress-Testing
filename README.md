@@ -1,109 +1,124 @@
 # Warehouse Anomaly Detection & Tail-Risk Stress Tester
 
-**Professional Project Summary & Technical Report**  
-Developed by Pranav  
-April 2026  
-*Documentation updated May 2026*
+**Professional Portfolio Project** | Supply Chain Risk & Quantitative Modelling
 
-## Abstract
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
+![License](https://img.shields.io/badge/License-Apache_2.0-green)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 
-This project quantifies the preventable financial loss arising from extreme high-value “dragon” orders (99th-percentile transactions) when warehouse fulfilment service levels degrade from the 99th to the 95th percentile. Using the UCI Online Retail dataset (541 000 raw rows, 3 665 SKUs, £8.9 M gross revenue over 374 days), two complementary scenarios were modelled: **gross (maximum exposure)** and **netted (realistic after cancellations)**. Realistic delays were simulated using industry parameters (educated guesses) from the 2025 WERC DC Measures Report and CSCMP State of Logistics Report. The end-to-end pipeline combines extreme-value theory, Monte-Carlo simulation, causal inference, Hawkes processes, and Bayesian Structural Time Series forecasting. Backtesting confirms model stability. Maintaining 99th-percentile SLA reduces exposure to near zero. All parameters and outputs are rigorously benchmarked and referenced.
-
-## Summary
-
-The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework for supply-chain leaders to measure and mitigate tail-risk exposure from high-value “dragon” orders. Key headline: in a bad year, relaxing service levels from the 99th to the 95th percentile creates **£77 000–£268 000** of preventable annual loss (netted to gross scenarios), while 99th-percentile fulfilment keeps exposure near zero. All results are validated by backtesting (shows acceptable violation rates under the stated assumptions). (Values are for directional purposes only).
-
-## Note on backtesting results:
-
-Scenario 1 (Gross): 0/34 violations (0.0%, Kupiec p=1.00, Christoffersen p=1.00).  
-Scenario 2 (Netted): 2/33 violations (6.1%, Kupiec p=0.79, Christoffersen p=0.61).  
-Reason:  
-Scenario 1 uses a harsher framing - no netting, stricter 4-hour SLA breach threshold (240 min vs 360 min), longer dragon delays (420 min vs 360 min), and stronger value bias (1.35 vs 1.20). This produces a heavier loss tail, so the model sets higher VaR/ES thresholds and appears “perfectly calibrated” (0 violations).  
-Scenario 2 uses realistic netting and more lenient parameters, resulting in a smoother loss distribution and a decent violation rate (6.1%). This backtest has decent statistical power and is the primary operational model (due to the small dataset, the statistical power of these tests are weak).
-
-## Project Overview & Data
-
-Owing to the proprietary nature of live warehouse transaction and fulfilment data, the publicly available UCI Online Retail dataset (2010–2011) was selected as the closest realistic proxy, with delays synthetically calibrated to 2025 industry benchmarks.  
-After cleaning (positive quantity & unit price, non-missing CustomerID, removal of miscellaneous codes), two parallel scenarios were created:
-
-- **Scenario 1 (Maximum Exposure)**: Gross demand with no netting of refunds/cancellations.  
-- **Scenario 2 (Realistic Netted Exposure)**: Full CustomerID–SKU netting to reflect actual fulfilled demand.
-
-Value-biased synthetic delays (18 % surge + 0.025–0.032 % dragon tier) were overlaid using log-normal distributions calibrated to 2025 WERC/CSCMP benchmarks. Holding costs calculated at 25 % APR.
-
-## Kaggle Notebook
-https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing
-
-## Detailed Methodology
-
-The pipeline consists of nine rigorously linked stages:
-
-1. **Data Ingestion & Pre-processing** – Filtering and CustomerID–StockCode netting.  
-2. **Global Diagnostics & Pareto Filtering** (80/20 rule).  
-3. **Extreme-Value Tail Modelling (EVT/GPD)** – Hill, moment, GEV estimators and peaks-over-threshold fitting.  
-4. **Realistic Delay & Anomaly Simulation** – Tiered (normal/surge/dragon) log-normal delays.  
-5. **Monte-Carlo Value-at-Risk & Expected-Shortfall** – 10 000 annual paths, VaR95/99, ES95.  
-6. **Causal Validation** – Propensity-score matching + quantile regression.  
-7. **Temporal Dependence & Forecasting** – Hawkes self-exciting process + Bayesian Structural Time Series.  
-8. **Purged Expanding-Window Backtesting** – Kupiec and Christoffersen tests.  
-9. **Reporting & Stress Interpretation** – Actionable mitigation dashboard.
-
-## Backtesting Results & Financial Impact
-
-**Warehouse Management Implications**  
-- Realistic (netted) operations: expected annual preventable dragon loss of **£77,459** (MC ES95) at 95th-percentile SLA.  
-- Gross view: exposure rises to **£268,153** annually.  
-- 5-year cumulative bleed without action: **£387 000–£1.34 M**.  
-- Prioritising 99th-percentile SLA on high-value orders eliminates virtually all preventable tail loss.  
-- Targeted interventions (fast lanes, dedicated safety stock) deliver immediate ROI.
-
-## Repository Contents
-
-- `src/` – Complete Python pipeline (data ingestion to forecasting)  
-- `notebooks/` – Exploratory analysis and interactive visualisations  
-- `dataset/` – Raw and cleaned UCI Online Retail dataset  
-- `project_report/` – Full technical report, backtesting results, and dashboards (including `updated_anomaly_summary.pdf`)  
-- `results/` – Plots and expected numeric results of both scenarios
-
-**How to Run**  
-1. Clone the repository.  
-2. Create a virtual environment and install dependencies:  
-   ```bash
-   pip install -r requirements.txt
-   ```  
-3. Execute the pipeline:  
-   ```bash
-   python notebooks/run_src.py
-   ```  
-   Or run the scenario scripts directly from `notebooks/`.
-
-> **Note on BSTS implementation**: The Bayesian Structural Time Series component is implemented as a custom state-space model (local level + seasonal) using NumPy (see `src/hwk_bsts_forecasting/mle_bsts.py`). It does not rely on PyMC or PyStan.
-
-## Technologies
-
-- **Core**: Python 3, pandas, NumPy, SciPy, statsmodels  
-- **Advanced**: Custom MLE Hawkes process + state-space BSTS (NumPy, Numba, SciPy), scikit-learn (PSM), extreme-value modelling  
-- **Visualisation**: Plotly, Matplotlib, Seaborn  
-
-## Parameter Calibration & References
-
-All synthetic parameters grounded in the latest 2025 WERC DC Measures Report and CSCMP State of Logistics Report. Full references included in the project files.
-
-## Initial flawed attempts
-Black-Scholes/Merton jump-diffusion for loss estimation (early overestimation ~$42M → discarded after math redo).
-
-## Conclusion
-
-This project demonstrates technical statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate (simulated) operational value in retail, e-commerce, or 3PL environments.
-
-This is an *undergraduate research / portfolio project* built under real constraints.  
-All financial figures are under stated assumptions and are directional/illustrative only.  
-*Do not treat the results as validated or suitable for operational decisions.*  
-Full honest framing, limitations, and scope are documented in the updated summary:  
-`project_report/updated_anomaly_summary.pdf`
+Developed by Pranav | April 2026 (Updated May 2026)
 
 ---
 
-**License**: Apache 2.0  
+## Abstract
+
+This project quantifies the **preventable financial loss** arising from extreme high-value “dragon” orders when warehouse fulfilment service levels degrade from the 99th to the 95th percentile.
+
+Using the UCI Online Retail dataset and industry-calibrated parameters, it combines **Extreme Value Theory (EVT)**, **Monte-Carlo simulation**, **Hawkes processes**, custom **Bayesian Structural Time Series (BSTS)**, causal inference, and rigorous purged backtesting to measure tail-risk exposure in warehouse operations.
+
+**Key Finding**: Maintaining 99th-percentile service levels on high-value orders can eliminate nearly all preventable tail-risk loss.
+
+---
+
+## Quick Start
+
+```bash
+# 1. Clone and install
+git clone https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing.git
+cd Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing
+pip install -r requirements.txt
+
+# 2. Run the full pipeline (both scenarios)
+python run_src.py
+```
+
+> The pipeline executes global statistics, EVT/GPD modelling, delay simulation, VaR/ES, Monte-Carlo, causal analysis, Hawkes + BSTS forecasting, and quantitative backtesting.
+
+---
+
+## Project Structure
+
+```
+.
+├── src/                      # Core modular Python package (do not modify lightly)
+│   ├── config.py
+│   ├── data/
+│   ├── delay_simulation/
+│   ├── global_statistics/
+│   ├── risk/                 # VaR, ES, Monte-Carlo
+│   ├── causal_engine/
+│   ├── hwk_bsts_forecasting/ # Custom Hawkes MLE + state-space BSTS
+│   ├── backtest/
+│   └── utils/
+├── run_src.py                # Main entry point (orchestrates both scenarios)
+├── notebooks/                # Archived Kaggle exports (see notebooks/README.md)
+├── project_report/           # Technical reports & PDFs
+├── results/                  # Generated plots and outputs
+├── dataset/                  # Raw & cleaned data
+├── requirements.txt
+├── pyproject.toml
+├── Makefile
+└── README.md
+```
+
+---
+
+## Methodology (High-Level)
+
+The end-to-end pipeline follows nine rigorously linked stages:
+
+1. Data ingestion & cleaning
+2. Global diagnostics & Pareto filtering
+3. Extreme Value Theory (EVT/GPD) tail modelling
+4. Realistic delay & anomaly simulation (industry-calibrated)
+5. Monte-Carlo VaR & Expected Shortfall
+6. Causal validation (PSM + quantile regression)
+7. Hawkes process + custom BSTS forecasting
+8. Purged expanding-window backtesting (Kupiec & Christoffersen tests)
+9. Reporting & stress interpretation
+
+All synthetic parameters are grounded in the **2025 WERC DC Measures Report** and **CSCMP State of Logistics Report**.
+
+---
+
+## Key Results (Directional)
+
+- **Preventable annual loss** at 95th-percentile SLA: **£77k – £268k**
+- Maintaining **99th-percentile SLA** on high-value orders reduces exposure to near zero.
+- Backtesting shows acceptable violation rates under stated assumptions.
+
+> Full details, limitations, and methodology are available in `project_report/updated_anomaly_summary.pdf`.
+
+---
+
+## Reproducibility
+
+- Primary execution: `python run_src.py`
+- See `notebooks/README.md` for context on archived Kaggle files.
+- A dedicated reproducibility section is available in `README_reproducibility_section.md`.
+- All random seeds and parameters are controlled via `src/config.py`.
+
+---
+
+## Technologies
+
+- **Core**: Python ≥ 3.12, pandas, NumPy, SciPy, statsmodels
+- **Advanced**: Custom Hawkes MLE + state-space BSTS (NumPy/Numba), scikit-learn, extreme-value modelling
+- **Visualisation**: Plotly, Matplotlib, Seaborn
+
+---
+
+## Limitations & Scope
+
+This is an undergraduate/portfolio project built under real data constraints. All financial figures are **directional and illustrative only**. See `LIMITATIONS.md` and the project report for full honest framing.
+
+---
+
+## License
+
+Apache 2.0
+
+---
+
 **Author**: Pranav  
-**Last Updated**: May 2026
+**Repository**: [github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing](https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing)
