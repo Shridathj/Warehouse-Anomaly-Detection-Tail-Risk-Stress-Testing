@@ -1,8 +1,8 @@
 """
 Execution of the anomaly detection pipeline.
 
-This is the main entry point for running both scenarios.
-Run with: python run_src.py
+Run from repository root:
+    python run_src.py
 """
 import sys
 from pathlib import Path
