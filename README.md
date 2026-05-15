@@ -45,7 +45,7 @@ python run_src.py
 │   ├── causal_engine/
 │   ├── hwk_bsts_forecasting/ # Custom Hawkes MLE + state-space BSTS
 │   ├── backtest/
-│   └── utils/               # Main entry point (orchestrates both scenarios)
+│   └── utils/               
 ├── notebooks/
 │   └── run_src.py/           # Main entry point (orchestrates both scenarios)
 ├── project_report/           # Technical reports & PDFs
