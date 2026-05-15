@@ -46,8 +46,7 @@ python run_src.py
 │   ├── hwk_bsts_forecasting/ # Custom Hawkes MLE + state-space BSTS
 │   ├── backtest/
 │   └── utils/               
-├── notebooks/
-│   └── run_src.py/           # Main entry point (orchestrates both scenarios)
+├── run_src.py                # Main entry point (orchestrates both scenarios)
 ├── project_report/           # Technical reports & PDFs
 ├── results/                  # Generated plots and outputs
 ├── dataset/                  # Raw & cleaned data
