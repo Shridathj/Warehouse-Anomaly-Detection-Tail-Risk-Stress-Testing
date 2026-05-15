@@ -2,11 +2,12 @@
 
 **Professional Project Summary & Technical Report**  
 Developed by Pranav  
-April 2026
+April 2026  
+*Documentation updated May 2026*
 
 ## Abstract
 
-This project quantifies the preventable financial loss arising from extreme high-value “dragon” orders (99th-percentile transactions) when warehouse fulfilment service levels degrade from the 99th to the 95th percentile. Using the UCI Online Retail dataset (541 000 raw rows, 3 665 SKUs, £8.9 M gross revenue over 374 days), two complementary scenarios were modelled: **gross (maximum exposure)** and **netted (realistic after cancellations)**. Realistic delays were simulated using industry parameters(educated guesses) from the 2025 WERC DC Measures Report and CSCMP State of Logistics Report. The end-to-end pipeline combines extreme-value theory, Monte-Carlo simulation, causal inference, Hawkes processes, and Bayesian Structural Time Series forecasting. Backtesting confirms model stability. Maintaining 99th-percentile SLA reduces exposure to near zero. All parameters and outputs are rigorously benchmarked and referenced.
+This project quantifies the preventable financial loss arising from extreme high-value “dragon” orders (99th-percentile transactions) when warehouse fulfilment service levels degrade from the 99th to the 95th percentile. Using the UCI Online Retail dataset (541 000 raw rows, 3 665 SKUs, £8.9 M gross revenue over 374 days), two complementary scenarios were modelled: **gross (maximum exposure)** and **netted (realistic after cancellations)**. Realistic delays were simulated using industry parameters (educated guesses) from the 2025 WERC DC Measures Report and CSCMP State of Logistics Report. The end-to-end pipeline combines extreme-value theory, Monte-Carlo simulation, causal inference, Hawkes processes, and Bayesian Structural Time Series forecasting. Backtesting confirms model stability. Maintaining 99th-percentile SLA reduces exposure to near zero. All parameters and outputs are rigorously benchmarked and referenced.
 
 ## Summary
 
@@ -14,15 +15,15 @@ The Warehouse Anomaly Detection & Tail-Risk Stress Tester provides a framework f
 
 ## Note on backtesting results:
 
-Scenario 1 (Gross): 0/34 violations (0.0%, Kupiec p=1.00, Christoffersen p=1.00).
-Scenario 2 (Netted): 2/33 violations (6.1%, Kupiec p=0.79, Christoffersen p=0.61).
-Reason:
-Scenario 1 uses a harsher framing - no netting, stricter 4-hour SLA breach threshold (240 min vs 360 min), longer dragon delays (420 min vs 360 min), and stronger value bias (1.35 vs 1.20). This produces a heavier loss tail, so the model sets higher VaR/ES thresholds and appears “perfectly calibrated” (0 violations).
+Scenario 1 (Gross): 0/34 violations (0.0%, Kupiec p=1.00, Christoffersen p=1.00).  
+Scenario 2 (Netted): 2/33 violations (6.1%, Kupiec p=0.79, Christoffersen p=0.61).  
+Reason:  
+Scenario 1 uses a harsher framing - no netting, stricter 4-hour SLA breach threshold (240 min vs 360 min), longer dragon delays (420 min vs 360 min), and stronger value bias (1.35 vs 1.20). This produces a heavier loss tail, so the model sets higher VaR/ES thresholds and appears “perfectly calibrated” (0 violations).  
 Scenario 2 uses realistic netting and more lenient parameters, resulting in a smoother loss distribution and a decent violation rate (6.1%). This backtest has decent statistical power and is the primary operational model (due to the small dataset, the statistical power of these tests are weak).
 
 ## Project Overview & Data
 
-Owing to the proprietary nature of live warehouse transaction and fulfilment data, the publicly available UCI Online Retail dataset (2010–2011) was selected as the closest realistic proxy, with delays synthetically calibrated to 2025 industry benchmarks.
+Owing to the proprietary nature of live warehouse transaction and fulfilment data, the publicly available UCI Online Retail dataset (2010–2011) was selected as the closest realistic proxy, with delays synthetically calibrated to 2025 industry benchmarks.  
 After cleaning (positive quantity & unit price, non-missing CustomerID, removal of miscellaneous codes), two parallel scenarios were created:
 
 - **Scenario 1 (Maximum Exposure)**: Gross demand with no netting of refunds/cancellations.  
@@ -30,7 +31,8 @@ After cleaning (positive quantity & unit price, non-missing CustomerID, removal 
 
 Value-biased synthetic delays (18 % surge + 0.025–0.032 % dragon tier) were overlaid using log-normal distributions calibrated to 2025 WERC/CSCMP benchmarks. Holding costs calculated at 25 % APR.
 
-## Kaggle Notebook: https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing
+## Kaggle Notebook
+https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing
 
 ## Detailed Methodology
 
@@ -46,7 +48,7 @@ The pipeline consists of nine rigorously linked stages:
 8. **Purged Expanding-Window Backtesting** – Kupiec and Christoffersen tests.  
 9. **Reporting & Stress Interpretation** – Actionable mitigation dashboard.
 
-## Backtesting Results & Financial Impact  
+## Backtesting Results & Financial Impact
 
 **Warehouse Management Implications**  
 - Realistic (netted) operations: expected annual preventable dragon loss of **£77,459** (MC ES95) at 95th-percentile SLA.  
@@ -59,35 +61,49 @@ The pipeline consists of nine rigorously linked stages:
 
 - `src/` – Complete Python pipeline (data ingestion to forecasting)  
 - `notebooks/` – Exploratory analysis and interactive visualisations  
-- `data/` – Raw and cleaned UCI Online Retail dataset  
-- `reports/` – Full technical report, backtesting results, and dashboards  
-- `results/` – The plots and the expected numeric results of both scenarios are included
-- To execute the full pipeline, install requirements 'pip install -r requirements.txt' and then, run `notebooks/run_src.py`
+- `dataset/` – Raw and cleaned UCI Online Retail dataset  
+- `project_report/` – Full technical report, backtesting results, and dashboards (including `updated_anomaly_summary.pdf`)  
+- `results/` – Plots and expected numeric results of both scenarios
+
+**How to Run**  
+1. Clone the repository.  
+2. Create a virtual environment and install dependencies:  
+   ```bash
+   pip install -r requirements.txt
+   ```  
+3. Execute the pipeline:  
+   ```bash
+   python notebooks/run_src.py
+   ```  
+   Or run the scenario scripts directly from `notebooks/`.
+
+> **Note on BSTS implementation**: The Bayesian Structural Time Series component is implemented as a custom state-space model (local level + seasonal) using NumPy (see `src/hwk_bsts_forecasting/mle_bsts.py`). It does not rely on PyMC or PyStan.
 
 ## Technologies
 
 - **Core**: Python 3, pandas, NumPy, SciPy, statsmodels  
-- **Advanced**: PyMC / PyStan (for BSTS), Hawkes process implementation, scikit-learn (PSM), extreme-value modelling libraries  
+- **Advanced**: Custom MLE Hawkes process + state-space BSTS (NumPy, Numba, SciPy), scikit-learn (PSM), extreme-value modelling  
 - **Visualisation**: Plotly, Matplotlib, Seaborn  
 
 ## Parameter Calibration & References
 
 All synthetic parameters grounded in the latest 2025 WERC DC Measures Report and CSCMP State of Logistics Report. Full references included in the project files.
 
-## Initial flawed attempts: Black-Scholes/Merton jump-diffusion for loss estimation (early overestimation ~$42M → discarded after math redo).
+## Initial flawed attempts
+Black-Scholes/Merton jump-diffusion for loss estimation (early overestimation ~$42M → discarded after math redo).
 
 ## Conclusion
 
 This project demonstrates technical statistical and econometric techniques applied to a real-world supply-chain problem. It delivers immediate (simulated) operational value in retail, e-commerce, or 3PL environments.
 
-This is an *undergraduate research/ portfolio project* built under real constraints.
+This is an *undergraduate research / portfolio project* built under real constraints.  
 All financial figures are under stated assumptions and are directional/illustrative only.  
 *Do not treat the results as validated or suitable for operational decisions.*  
 Full honest framing, limitations, and scope are documented in the updated summary:  
-*project_report/updated_anomaly_summary.pdf*
+`project_report/updated_anomaly_summary.pdf`
 
 ---
 
-**License**: Apache2.0
+**License**: Apache 2.0  
 **Author**: Pranav  
-**Last Updated**: April 2026
+**Last Updated**: May 2026
