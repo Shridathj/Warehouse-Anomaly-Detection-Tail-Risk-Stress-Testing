@@ -7,20 +7,32 @@ on:
     branches: [ main ]
 
 jobs:
-  lint-and-test:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
+
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install ruff
+
     - name: Lint with Ruff
-      run: ruff check . --select E,F --ignore E501 || echo "Linting completed (some warnings may exist)"
-    - name: Basic syntax check
-      run: python -m py_compile run_src.py
+      run: |
+        ruff check .
+        ruff format --check .
+
+    - name: Smoke test pipeline import
+      run: |
+        python -c "import sys; sys.path.insert(0, '.'); from src.config import SCENARIO_CONFIGS; print('Config import successful')"
