@@ -2,10 +2,6 @@
 
 **Professional Portfolio Project** | Supply Chain Risk & Quantitative Modelling
 
-![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
-![License](https://img.shields.io/badge/License-Apache_2.0-green)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen)
-
 Developed by Pranav | April 2026 (Updated May 2026)
 
 ---
@@ -63,7 +59,7 @@ python run_src.py
 
 ---
 
-## Methodology (High-Level)
+## Methodology
 
 The end-to-end pipeline follows nine rigorously linked stages:
 
