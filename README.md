@@ -90,8 +90,6 @@ All synthetic parameters are grounded in the **2025 WERC DC Measures Report** an
 ## Reproducibility
 
 - Primary execution: `python run_src.py`
-- See `notebooks/README.md` for context on archived Kaggle files.
-- A dedicated reproducibility section is available in `README_reproducibility_section.md`.
 - All random seeds and parameters are controlled via `src/config.py`.
 
 ---
