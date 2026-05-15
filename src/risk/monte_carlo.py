@@ -1,11 +1,9 @@
 # src/risk/monte_carlo.py
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import seaborn as sns
 from scipy.stats import gaussian_kde
-from src.data.loader import load_and_clean_uci
 import warnings
 warnings.filterwarnings("ignore")
 

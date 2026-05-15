@@ -4,7 +4,6 @@ Tests for pipeline structure, configuration, and orchestration integrity.
 
 import inspect
 
-import pytest
 
 def test_both_scenarios_exist(scenario_configs):
     """Verify that exactly two scenarios are defined."""
@@ -51,7 +50,6 @@ def test_pipeline_execution_sequence():
     ]
 
     # Import all functions
-    from src.data.loader import load_and_clean_uci
     from src.delay_simulation.delays import run_mock_delays
     from src.risk.var_es import run_var
     from src.risk.monte_carlo import run_monte_carlo

@@ -1,7 +1,6 @@
 # src/simulation/delays.py
 import numpy as np
 import pandas as pd
-from src.data.loader import load_and_clean_uci
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -80,7 +79,7 @@ def run_mock_delays(
         sla_counts = df['SLA_Status'].value_counts().reindex(SLA_LABELS)
         revenue_at_risk = df[df['SLA_Status'].isin(['SLA Breach','Fulfillment Failure'])]['OrderValue_GBP'].sum()
 
-        print(f"\nDelays")
+        print("\nDelays")
         print(f"{'='*50}")
         print(f"Surge events : {(df['Delay_Tier']=='surge').sum():,} / {n:,} ({(df['Delay_Tier']=='surge').mean():.1%})")
         print(f"Dragon events : {(df['Delay_Tier']=='dragon').sum():,} / {n:,} ({(df['Delay_Tier']=='dragon').mean():.4%})")
@@ -156,7 +155,7 @@ def run_mock_delays(
         sla_counts  = df['SLA_Status'].value_counts().reindex(SLA_LABELS)
         revenue_at_risk = df[df['SLA_Status'].isin(['SLA Breach', 'Fulfillment Failure'])]['OrderValue_GBP'].sum()
 
-        print(f"\nDelays - SCENARIO 2 (NETTED)")
+        print("\nDelays - SCENARIO 2 (NETTED)")
         print(f"{'='*50}")
         print(f"Surge events : {(df['Delay_Tier']=='surge').sum():,} / {n:,} ({(df['Delay_Tier']=='surge').mean():.1%})")
         print(f"Dragon events : {(df['Delay_Tier']=='dragon').sum():,} / {n:,} ({(df['Delay_Tier']=='dragon').mean():.4%})")

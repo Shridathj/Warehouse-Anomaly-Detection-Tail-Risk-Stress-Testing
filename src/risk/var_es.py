@@ -1,7 +1,4 @@
 # src/risk/var.py
-import numpy as np
-import pandas as pd
-from src.data.loader import load_and_clean_uci
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -92,7 +89,7 @@ def run_var(
         total_dragons     = df['Is_Dragon'].sum()
         unfulfill_pct     = 100 * unfulfilled_count / total_dragons if total_dragons > 0 else 0
 
-        print(f"\nSummary")
+        print("\nSummary")
         print(f"Dragons at risk of unfulfillment : {unfulfilled_count:,} / {total_dragons:,} ({unfulfill_pct:.1f}%)")
         print(f"Expected revenue at risk from Dragons : £{df.loc[df['Unfulfilled_Dragon'], 'OrderValue_GBP'].sum():,.0f}")
 
@@ -213,7 +210,7 @@ def run_var(
         total_dragons     = df['Is_Dragon'].sum()
         unfulfill_pct     = 100 * unfulfilled_count / total_dragons if total_dragons > 0 else 0
 
-        print(f"\nSummary")
+        print("\nSummary")
         print(f"Dragons at risk of unfulfillment : {unfulfilled_count:,} / {total_dragons:,} ({unfulfill_pct:.1f}%)")
         print(f"Expected revenue at risk from Dragons : £{df.loc[df['Unfulfilled_Dragon'], 'OrderValue_GBP'].sum():,.0f}")
 

@@ -131,42 +131,42 @@ def run_global_statistics(
         print(f"Unique SKUs        : {df['SKU'].nunique():,}")
         print(f"Date range         : {df['Date'].min()} -> {df['Date'].max()}")
 
-        print(f"\nGLOBAL QUANTITIES ( Without Pareto Filtering)")
+        print("\nGLOBAL QUANTITIES ( Without Pareto Filtering)")
         print(f"Mean Quantity      : {global_qnt_mean:,.2f}")
         print(f"Std Dev            : {global_qnt_std:,.2f}")
         print(f"CV (σ/μ)           : {global_qnt_cv:,.3f}")
         print(f"Skewness Quantity : {global_qnt_skew:,.2f}")
         print(f"Pearson Kurtosis   : {global_qnt_kurt:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY LOCATION ( With Pareto Filtering)")
+        print("\nGLOBAL QUANTITY LOCATION ( With Pareto Filtering)")
         print(f"Mean Quantity      : {global_qty_mean:,.2f}")
         print(f"Median Quantity    : {global_qty_median:,.2f}")
         print(f"Mode Quantity      : {global_qty_mode:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY DISPERSION")
+        print("\nGLOBAL QUANTITY DISPERSION")
         print(f"Std Dev Quantity   : {global_qty_std:,.2f}")
         print(f"CV (σ/μ)           : {global_qty_cv:.3f}")
 
-        print(f"\nGLOBAL QUANTITY SHAPE")
+        print("\nGLOBAL QUANTITY SHAPE")
         print(f"Skewness           : {global_qty_skew:,.2f}")
         print(f"Pearson Kurtosis   : {global_qty_kurt:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY DEPENDENCE (Daily Aggregates)")
+        print("\nGLOBAL QUANTITY DEPENDENCE (Daily Aggregates)")
         print(f"ACF Lags 1-5       : {qty_acf[1:6].round(3).tolist()}")
         print(f"Ljung-Box Q (lag10): {lb_q[-1]:,.2f} (p-val: {lb_pval[-1]:.4f})")
 
-        print(f"\nGLOBAL QUANTITY TAILS")
+        print("\nGLOBAL QUANTITY TAILS")
         print(f"95th %ile Quantity : {global_qty_q95:,.2f}")
         print(f"97.5th %ile Qty    : {global_qty_q975:,.2f}")
         print(f"99th %ile Quantity : {global_qty_q99:,.2f}")
         print(f"Mean Excess (u=99%): {global_qty_mean_excess:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY NORMALITY TESTS")
+        print("\nGLOBAL QUANTITY NORMALITY TESTS")
         print(f"KS Statistic       : {ks_stat:.3f} (p-val: {ks_pval:.4f})")
         print(f"AD Statistic       : {ad_stat:.3f} (p-val: {ad_pval:.4f})")  # Pvalue
         print(f"SW Statistic       : {sw_stat:.3f} (p-val: {sw_pval:.4f}; subsampled)")
 
-        print(f"\nGLOBAL ORDER VALUE (for context)")
+        print("\nGLOBAL ORDER VALUE (for context)")
         print(f"Mean Order Value   : £ {global_val_mean:,.2f}")
         print(f"Median Order Value : £ {global_val_median:,.2f}")
         print(f"99th %ile Value  : £ {global_val_q99:,.2f}")
@@ -223,12 +223,9 @@ def run_global_statistics(
         n = len(df)
         k_hill = int(np.sqrt(n))
         sorted_qty_desc = np.sort(quantities)[::-1]
-        if k_hill > 1 and k_hill < len(sorted_qty_desc):
-          log_ratios = np.log(sorted_qty_desc[:k_hill] / sorted_qty_desc[k_hill - 1])
-          global_qty_hill_xi = 1 / log_ratios.mean() if not np.isnan(log_ratios.mean()) else np.nan
-        else:
-            global_qty_hill_xi = np.nan
 
+        if k_hill > 1 and k_hill < len(sorted_qty_desc):
+            pass
         z_scores = (quantities - global_qty_mean) / global_qty_std
         ks_stat, ks_pval = stats.kstest(z_scores, 'norm') # Kolmogorov - Smirnov Test
         ad_stat, ad_pval = sm.stats.normal_ad(quantities) # Anderson - Darling Test
@@ -272,42 +269,42 @@ def run_global_statistics(
         print(f"Unique SKUs        : {df['SKU'].nunique():,}")
         print(f"Date range         : {df['Date'].min()} -> {df['Date'].max()}")
 
-        print(f"\nGLOBAL QUANTITIES ( Without Pareto Filtering)")
+        print("\nGLOBAL QUANTITIES ( Without Pareto Filtering)")
         print(f"Mean Quantity      : {global_qnt_mean:,.2f}")
         print(f"Std Dev            : {global_qnt_std:,.2f}")
         print(f"CV (σ/μ)           : {global_qnt_cv:,.3f}")
         print(f"Skewness Quantity : {global_qnt_skew:,.2f}")
         print(f"Pearson Kurtosis   : {global_qnt_kurt:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY LOCATION ( With Pareto Filtering)")
+        print("\nGLOBAL QUANTITY LOCATION ( With Pareto Filtering)")
         print(f"Mean Quantity      : {global_qty_mean:,.2f}")
         print(f"Median Quantity    : {global_qty_median:,.2f}")
         print(f"Mode Quantity      : {global_qty_mode:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY DISPERSION")
+        print("\nGLOBAL QUANTITY DISPERSION")
         print(f"Std Dev Quantity   : {global_qty_std:,.2f}")
         print(f"CV (σ/μ)           : {global_qty_cv:.3f}")
 
-        print(f"\nGLOBAL QUANTITY SHAPE")
+        print("\nGLOBAL QUANTITY SHAPE")
         print(f"Skewness           : {global_qty_skew:,.2f}")
         print(f"Pearson Kurtosis   : {global_qty_kurt:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY DEPENDENCE (Daily Aggregates)")
+        print("\nGLOBAL QUANTITY DEPENDENCE (Daily Aggregates)")
         print(f"ACF Lags 1-5       : {qty_acf[1:6].round(3).tolist()}")
         print(f"Ljung-Box Q (lag10): {lb_q[-1]:,.2f} (p-val: {lb_pval[-1]:.4f})")
 
-        print(f"\nGLOBAL QUANTITY TAILS")
+        print("\nGLOBAL QUANTITY TAILS")
         print(f"95th %ile Quantity : {global_qty_q95:,.2f}")
         print(f"97.5th %ile Qty    : {global_qty_q975:,.2f}")
         print(f"99th %ile Quantity : {global_qty_q99:,.2f}")
         print(f"Mean Excess (u=99%): {global_qty_mean_excess:,.2f}")
 
-        print(f"\nGLOBAL QUANTITY NORMALITY TESTS")
+        print("\nGLOBAL QUANTITY NORMALITY TESTS")
         print(f"KS Statistic       : {ks_stat:.3f} (p-val: {ks_pval:.4f})")
         print(f"AD Statistic       : {ad_stat:.3f} (p-val: {ad_pval:.4f})")
         print(f"SW Statistic       : {sw_stat:.3f} (p-val: {sw_pval:.4f}; subsampled)")
 
-        print(f"\nGLOBAL ORDER VALUE (for context)")
+        print("\nGLOBAL ORDER VALUE (for context)")
         print(f"Mean Order Value   : £ {global_val_mean:,.2f}")
         print(f"Median Order Value : £ {global_val_median:,.2f}")
         print(f"99th %ile Value  : £ {global_val_q99:,.2f}")
@@ -395,7 +392,7 @@ def run_evt_gpd(
         print(f"  Hill ξ̂            : {hill_xi:.3f}")
         print(f"  Moment ξ̂          : {xi_moment:.3f}")
         print(f"  GEV Block-Max ξ̂   : {xi_gev:.3f}")
-        print(f"  All ξ̂  > 0        : Fréchet domain confirmed (heavy tails)")
+        print("  All ξ̂  > 0        : Fréchet domain confirmed (heavy tails)")
 
 # 4. Mean Excess Plot + Slope 
         u_grid = np.percentile(quantities, np.linspace(90, 99, 40))
@@ -422,7 +419,8 @@ def run_evt_gpd(
 # 5. AMSE-Optimal Threshold 
         @jit(nopython=True)
         def hill_jit(sorted_ex, k_u):
-            if k_u < 2: return 0.0
+            if k_u < 2: 
+                return 0.0
             lr = np.log(sorted_ex[:k_u] / sorted_ex[k_u-1])
             return np.mean(lr)
 
@@ -433,8 +431,8 @@ def run_evt_gpd(
         for u in u_grid_amse:
             exc = quantities[quantities > u] - u
             k_u = len(exc)
-            if k_u < 50: continue
-            s_exc = np.sort(exc)[::-1]
+            if k_u < 50: 
+                continue
             xi_boots = []
             for _ in range(n_boot):
                 boot = np.random.choice(exc, k_u, replace=True)
@@ -530,7 +528,7 @@ def run_evt_gpd(
         print(f" Hill ξ̂          : {hill_xi:.3f}" if not np.isnan(hill_xi) else " Hill ξ̂          : nan")
         print(f" Moment ξ̂        : {xi_moment:.3f}" if not np.isnan(xi_moment) else " Moment ξ̂        : nan")
         print(f" GEV Block-Max ξ̂ : {xi_gev:.3f}" if not np.isnan(xi_gev) else " GEV Block-Max ξ̂ : nan")
-        print(f" All ξ̂  > 0      : Fréchet domain confirmed (heavy tails persist even after netting)")
+        print(" All ξ̂  > 0      : Fréchet domain confirmed (heavy tails persist even after netting)")
 
 # Mean Excess Plot
         u_grid      = np.percentile(quantities, np.linspace(90, 99, 40))
@@ -555,7 +553,8 @@ def run_evt_gpd(
 # AMSE-Optimal Threshold
         @jit(nopython=True)
         def hill_jit(sorted_ex, k_u):
-            if k_u < 2: return 0.0
+            if k_u < 2: 
+                return 0.0
             lr = np.log(sorted_ex[:k_u] / sorted_ex[k_u-1])
             return np.mean(lr)
 

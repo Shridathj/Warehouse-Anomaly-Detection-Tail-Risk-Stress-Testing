@@ -5,7 +5,7 @@ Test that all critical modules and functions can be imported successfully.
 class TestCoreImports:
 
     def test_config_import(self):
-        from src.config import SCENARIO_CONFIGS, BACKTEST_CONFIG, CAUSAL_CONFIG
+        from src.config import SCENARIO_CONFIGS
         assert isinstance(SCENARIO_CONFIGS, dict)
         assert 1 in SCENARIO_CONFIGS and 2 in SCENARIO_CONFIGS
 

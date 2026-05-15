@@ -1,5 +1,4 @@
 # src/backtest/backtest.py
-import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +7,6 @@ from scipy.stats import gaussian_kde
 from datetime import timedelta
 import seaborn as sns
 import warnings
-from src.data.loader import load_and_clean_uci
 warnings.filterwarnings("ignore")
 plt.style.use('seaborn-v0_8-whitegrid')
 
@@ -256,10 +254,14 @@ def run_quantitative_backtest(
             n00 = n01 = n10 = n11 = 0
             for j in range(1, len(viol_arr)):
                 prev, curr = viol_arr[j - 1], viol_arr[j]
-                if   prev == 0 and curr == 0: n00 += 1
-                elif prev == 0 and curr == 1: n01 += 1
-                elif prev == 1 and curr == 0: n10 += 1
-                else: n11 += 1
+                if   prev == 0 and curr == 0: 
+                    n00 += 1
+                elif prev == 0 and curr == 1: 
+                    n01 += 1
+                elif prev == 1 and curr == 0: 
+                    n10 += 1
+                else: 
+                    n11 += 1
 
             total = n00 + n01 + n10 + n11
             if total == 0:
@@ -669,12 +671,17 @@ def run_quantitative_backtest(
             n00 = n01 = n10 = n11 = 0
             for j in range(1, len(viol_arr)):
                 prev, curr = viol_arr[j - 1], viol_arr[j]
-                if prev == 0 and curr == 0: n00 += 1
-                elif prev == 0 and curr == 1: n01 += 1
-                elif prev == 1 and curr == 0: n10 += 1
-                else: n11 += 1
+                if prev == 0 and curr == 0: 
+                    n00 += 1
+                elif prev == 0 and curr == 1: 
+                    n01 += 1
+                elif prev == 1 and curr == 0: 
+                    n10 += 1
+                else: 
+                    n11 += 1
             total = n00 + n01 + n10 + n11
-            if total == 0: return 1.0
+            if total == 0: 
+                return 1.0
             pi = (n01 + n11) / total
             pi0 = n01 / (n00 + n01) if (n00 + n01) > 0 else 0.0
             pi1 = n11 / (n10 + n11) if (n10 + n11) > 0 else 0.0

@@ -1,8 +1,6 @@
 # src/causal/causal_engine.py
 import gc
 import logging
-from tracemalloc import start
-from matplotlib.pylab import sample
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -11,9 +9,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from statsmodels.regression.quantile_regression import QuantReg
-from scipy.stats import bootstrap
 from typing import List
-from src.data.loader import load_and_clean_uci
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -43,13 +39,12 @@ def run_causal_engine(
     surge_idx = state.get("surge_idx", np.array([], dtype=int))
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
-    rng = np.random.default_rng(314159)
+    #rng = np.random.default_rng(314159)
         
     if scenario == 1:
         CALIPER = cfg["PSM_CALIPER"]  # Caliper for PSM matching
         PS_SUBSAMPLE = cfg["PSM_SUBSAMPLE"]
         QR_SUBSAMPLE = cfg["QR_SUBSAMPLE"]
-        BOOTSTRAP_REPS = cfg["BOOTSTRAP_REPS"]
         QUANTILES = cfg["QUANTILES"]
 
 
@@ -237,11 +232,16 @@ def run_causal_engine(
                     f"£{self.total_annual_impact:,.0f} profit impact ({gross_margin:.0%} margin)")
         
             def run_all(self):
-                self.fit_propensity(); gc.collect()
-                self.psm_caliper_exact_country(); gc.collect()
-                self.quantile_regression(); gc.collect()
-                self.dragon_metrics(); gc.collect()
-                self.annual_impact(); gc.collect()
+                self.fit_propensity()
+                gc.collect()
+                self.psm_caliper_exact_country()
+                gc.collect()
+                self.quantile_regression()
+                gc.collect()
+                self.dragon_metrics()
+                gc.collect()
+                self.annual_impact()
+                gc.collect()
                 self.plot_convergence()
 
             def plot_convergence(self):
@@ -281,7 +281,7 @@ def run_causal_engine(
 
             def summary_dashboard(self):
                 print("\n" + "="*50)
-                print(f"CAUSAL IMPACT DASHBOARD — SURGE + DRAGON (95th & 99.9th %ile)")
+                print("CAUSAL IMPACT DASHBOARD — SURGE + DRAGON (95th & 99.9th %ile)")
                 print("="*50)
                 print(f"{'Method':<32} {'ATE (Net Revenue)':>22} {'p-value':>15}")
                 print("-"*50)
@@ -290,7 +290,6 @@ def run_causal_engine(
                     p = self.p_qr[q]
                     label = f"Quantile Reg ({q:.1%})"
                     if not pd.isna(ate):
-                        ate_str = f"{ate:>+,.2f}" if abs(ate) < 1.0 else f"{ate:>,.0f}"
                         print(f"{label:<32} £{ate:>2,.0f} {p:>12.2e}")
                     else:
                         print(f"{label:<32} {'—':>20} {'—':>12}")
@@ -334,7 +333,6 @@ def run_causal_engine(
         CALIPER = cfg["PSM_CALIPER"]  # Caliper for PSM matching
         PS_SUBSAMPLE = cfg["PSM_SUBSAMPLE"]
         QR_SUBSAMPLE = cfg["QR_SUBSAMPLE"]
-        BOOTSTRAP_REPS = cfg["BOOTSTRAP_REPS"]
         QUANTILES = cfg["QUANTILES"]
         MAX_COUNTRIES = cfg["MAX_COUNTRIES"]
 
@@ -569,11 +567,21 @@ def run_causal_engine(
                     f"£{self.total_annual_impact:,.0f} profit impact ({gross_margin:.0%} margin)")
 
             def run_all(self):
-                self.fit_propensity();          gc.collect()
-                self.psm_caliper_exact_country(); gc.collect()
-                self.quantile_regression();     gc.collect()
-                self.dragon_metrics();          gc.collect()
-                self.annual_impact();           gc.collect()
+                self.fit_propensity()
+                gc.collect()
+
+                self.psm_caliper_exact_country()
+                gc.collect()
+
+                self.quantile_regression()
+                gc.collect()
+
+                self.dragon_metrics()
+                gc.collect()
+
+                self.annual_impact()
+                gc.collect()
+
                 self.plot_convergence()
 
             def plot_convergence(self):

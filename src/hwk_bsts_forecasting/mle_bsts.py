@@ -1,7 +1,5 @@
 #src/hwk_bsts_forecasting/mle_bsts.py
-import gc
 import logging
-from os import times
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -9,8 +7,6 @@ import plotly.graph_objects as go
 from scipy.optimize import minimize
 from scipy.integrate import trapezoid
 from numba import jit, prange
-from src.data.loader import load_and_clean_uci
-from datetime import timedelta
 import warnings
 warnings.filterwarnings("ignore")
 plt.style.use('seaborn-v0_8-whitegrid')
@@ -39,7 +35,7 @@ def run_backtest(
     _show = _plotly_show_alias(ctx)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
-    rng = np.random.default_rng(314159)
+    #rng = np.random.default_rng(314159)
     
     if scenario == 1:
 
@@ -211,7 +207,7 @@ def run_backtest(
         print(f"2012 Forecast               : {annual_2012:,} dragons")
         print(f"2012 P&L Bleed (30% margin) : £ {base_annual_bleed:,.0f}")
         print(f"5-Year Bleed (No Action)    : £ {base_annual_bleed * 5:,.0f}")
-        print(f"5-Year Bleed (Zero Target)  : £ 0")
+        print("5-Year Bleed (Zero Target)  : £ 0")
         print("\nMITIGATION PATH:")
         for name, reduction in interventions.items():
             mitigated = int(annual_2012 * reduction)
@@ -389,7 +385,7 @@ def run_backtest(
         print(f"2012 Forecast               : {annual_2012:,} dragons")
         print(f"2012 P&L Bleed (30% margin) : £ {base_annual_bleed:,.0f}")
         print(f"5-Year Bleed (No Action)    : £ {base_annual_bleed * 5:,.0f}")
-        print(f"5-Year Bleed (Zero Target)  : £ 0")
+        print("5-Year Bleed (Zero Target)  : £ 0")
         print("\nMITIGATION PATH:")
         for name, reduction in interventions.items():
             mitigated = int(annual_2012 * reduction)

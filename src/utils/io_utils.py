@@ -10,7 +10,6 @@
 
 import io
 import sys
-import matplotlib
 import matplotlib.pyplot as plt
 from pathlib import Path
 
