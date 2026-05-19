@@ -62,7 +62,7 @@ CAUSAL_CONFIG = {
     "PSM_SUBSAMPLE": 250_000,  # PS fitting subsample size
     "QR_SUBSAMPLE": 180_000,  # Quantile regression subsample size
     "BOOTSTRAP_REPS": 400,  # Bootstrap replications
-    "QUANTILES": [0.50, 0.75, 0.95, 0.99, 0.999],  # Quantiles for analysis
+    "QUANTILES": [0.95, 0.999],  # Quantiles for analysis
     "MAX_COUNTRIES": 8,  # Maximum countries to include in causal model
 }
 

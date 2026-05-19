@@ -9,11 +9,13 @@ from src.config import SCENARIO_CONFIGS
 PAGE_HOME = "home"
 PAGE_SCENARIO_1 = "scenario_1"
 PAGE_SCENARIO_2 = "scenario_2"
+PAGE_REPORT = "project_report"
 
 NAV_OPTIONS = {
     "Overview": PAGE_HOME,
     "Scenario 1 — Gross (Max Risk)": PAGE_SCENARIO_1,
     "Scenario 2 — Netted": PAGE_SCENARIO_2,
+    "Project Report": PAGE_REPORT,
 }
 
 
