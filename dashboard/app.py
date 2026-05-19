@@ -5,10 +5,10 @@ from pathlib import Path
 import streamlit as st
 
 from dashboard.components.home import render_home
-from dashboard.components.report import render_report                          # ← add
+from dashboard.components.report import render_report                         
 from dashboard.components.scenario import render_scenario
 from dashboard.components.sidebar import (
-    PAGE_HOME, PAGE_SCENARIO_1, PAGE_SCENARIO_2, PAGE_REPORT,                 # ← add PAGE_REPORT
+    PAGE_HOME, PAGE_SCENARIO_1, PAGE_SCENARIO_2, PAGE_REPORT,                 
     render_sidebar,
 )
 from dashboard.theme import inject_custom_css
@@ -38,8 +38,8 @@ def main() -> None:
         render_scenario(1)
     elif page == PAGE_SCENARIO_2:
         render_scenario(2)
-    elif page == PAGE_REPORT:                                                  # ← add
-        render_report()                                                        # ← add
+    elif page == PAGE_REPORT:                                                  
+        render_report()                                                        
 
 
 if __name__ == "__main__":
