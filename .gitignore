@@ -136,6 +136,14 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Streamlit local secrets (never commit)
+.streamlit/secrets.toml
+
+# Generated pipeline plots (recreated by run_src.py)
+plots/scenario1/**
+plots/scenario2/**
+!plots/README.md
+
 # IDEs
 .vscode/
 .idea/

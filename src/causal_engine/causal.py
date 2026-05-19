@@ -11,12 +11,13 @@ from sklearn.pipeline import Pipeline
 from statsmodels.regression.quantile_regression import QuantReg
 from typing import List
 import warnings
+from src.utils.plot_paths import save_plotly_figure
 warnings.filterwarnings("ignore")
 
 def _plotly_show_alias(ctx):
-    def _show(fig):
+    def _show(fig, filename: str | None = None):
         if ctx is not None:
-            ctx.save_plotly(fig)
+            ctx.save_plotly(fig, filename)
         else:
             fig.show()
     return _show
@@ -277,7 +278,8 @@ def run_causal_engine(
                     x=0.5, y=0.92, xref='paper', yref='paper',
                     text=f"<b>£{self.total_annual_impact:,.0f} ANNUAL IMPACT</b><br>{self.annual_dragons:,} dragons/year",
                     showarrow=False, font_size=16, bgcolor='gold', font_color='black')
-                _show(fig)
+                save_plotly_figure(fig, "causal_psm_plot-sc1.png", scenario=1)
+                _show(fig, "causal_psm_plot-sc1.png")
 
             def summary_dashboard(self):
                 print("\n" + "="*50)
@@ -616,7 +618,8 @@ def run_causal_engine(
                     text=(f"<b>£{self.total_annual_impact:,.0f} ANNUAL IMPACT</b>"
                         f"<br>{self.annual_dragons:,} dragons/year"),
                     showarrow=False, font_size=16, bgcolor='gold', font_color='black')
-                _show(fig)
+                save_plotly_figure(fig, "causal_psm_plot-sc2.png", scenario=2)
+                _show(fig, "causal_psm_plot-sc2.png")
 
             def summary_dashboard(self):
                 print("\n" + "=" * 50)

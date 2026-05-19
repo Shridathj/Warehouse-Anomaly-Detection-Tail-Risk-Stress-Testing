@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import acf
 from numba import jit
 from src.data.loader import load_and_clean_uci
+from src.utils.plot_paths import save_matplotlib_figure
 import warnings
 warnings.filterwarnings("ignore")
  
@@ -118,12 +119,14 @@ def run_global_statistics(
         axes[1].set_xlabel('log(1 + Quantity)')
         axes[1].set_ylabel('Density')
         plt.tight_layout()
+        save_matplotlib_figure("original-log-histogram-sc1.png", scenario=1)
         plt.show()
 
 # QQ-Plot 
         fig, ax = plt.subplots(figsize=(14, 5))
         stats.probplot(quantities, dist="norm", plot=ax)
         ax.set_title('QQ-Plot: Quantity vs. Gaussian')
+        save_matplotlib_figure("QQ-plot-sc1.png", scenario=1)
         plt.show()
 
 # Outputs
@@ -173,7 +176,7 @@ def run_global_statistics(
         print(f"Max Order Value    : £ {global_val_max:,.2f}")
  
     else:
-        df = load_and_clean_uci(scenario="netted")
+        df = state.get("df", df)
         daily_df = df.groupby('Date', sort=False).agg(
             TotalQuantity=('Quantity', 'sum'),
             TotalValue=('OrderValue', 'sum'),
@@ -254,12 +257,14 @@ def run_global_statistics(
         axes[1].set_title('Log-Transformed Net Quantity (Scenario 2)')
         axes[1].set_xlabel('log(1 + Net Quantity)')
         plt.tight_layout()
+        save_matplotlib_figure("original-log-histogram-sc2.png", scenario=2)
         plt.show()
 
 # QQ-Plot
         fig, ax = plt.subplots(figsize=(14, 5))
         stats.probplot(quantities, dist="norm", plot=ax)
         ax.set_title('QQ-Plot: Net Quantity vs. Gaussian (Scenario 2)')
+        save_matplotlib_figure("QQ-plot-sc2.png", scenario=2)
         plt.show()
 
         print(f"SW Statistic : {sw_stat:.3f} (p-val: {sw_pval:.4f}; "
@@ -359,7 +364,7 @@ def run_evt_gpd(
     _show = _plotly_show_alias(ctx)
  
     if scenario == 1:
-        df = load_and_clean_uci(scenario="gross")
+        df = state.get("df", df)
         sku_vol = df.groupby('SKU')['Quantity'].sum().sort_values(ascending=False)
         cum_vol = sku_vol.cumsum() / sku_vol.sum()
         high_vol_skus = sku_vol[cum_vol <= 0.80].index.tolist()
@@ -411,7 +416,7 @@ def run_evt_gpd(
         plt.axvline(u_grid[upper_idx], color='r', linestyle='--', label=f'Upper tail starts here (slope = {slope:.2f})')
         plt.legend()
         plt.tight_layout()
-        plt.savefig('mean_excess_plot.png', dpi=300)
+        save_matplotlib_figure("mean_excess_plot-sc1.png", scenario=1)
         plt.show()
 
         print(f"\nMean Excess Upper-Tail Slope : {slope:.3f}  (>0 implies heavy tail confirmed)")
@@ -454,7 +459,7 @@ def run_evt_gpd(
         plt.legend()
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('amse_threshold.png', dpi=300)
+        save_matplotlib_figure("amse_threshold-sc1.png", scenario=1)
         plt.show()
 
         print(f"AMSE-Optimal Threshold u     : {opt_u:.1f}")
@@ -546,6 +551,7 @@ def run_evt_gpd(
                     label=f'Upper tail starts (slope = {slope:.2f})')
         plt.legend()
         plt.tight_layout()
+        save_matplotlib_figure("mean_excess_plot-sc2.png", scenario=2)
         plt.show()
 
         print(f"\nMean Excess Upper-Tail Slope : {slope:.3f} (>0 -> heavy tail confirmed on net data)")
@@ -594,6 +600,7 @@ def run_evt_gpd(
             plt.legend()
             plt.grid(True, alpha=0.3)
             plt.tight_layout()
+            save_matplotlib_figure("amse_threshold-sc2.png", scenario=2)
             plt.show()
             print(f"AMSE-Optimal Threshold u : {opt_u:.1f}")
         else:
@@ -626,8 +633,7 @@ def run_sku_filter(
     _show = _plotly_show_alias(ctx)
  
     if scenario == 1:
-        df = load_and_clean_uci(scenario="gross")
-        df_plot = df.copy() 
+        df_plot = df.copy()
         df_plot['Revenue'] = df_plot['Quantity'] * df_plot['UnitPrice']
 
         top15 = (df_plot.groupby('StockCode')
@@ -640,9 +646,7 @@ def run_sku_filter(
         print(top15[['Total_Quantity', 'Avg_Unit_Price', 'Total_Revenue']].round(2))
 
     else:
-        df = load_and_clean_uci(scenario="netted")
         df_plot = df.copy()
-
         df_plot['Revenue'] = df_plot['OrderValue_GBP']
 
     top15 = (df_plot.groupby('StockCode')

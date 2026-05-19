@@ -8,13 +8,14 @@ from scipy.optimize import minimize
 from scipy.integrate import trapezoid
 from numba import jit, prange
 import warnings
+from src.utils.plot_paths import save_plotly_figure
 warnings.filterwarnings("ignore")
 plt.style.use('seaborn-v0_8-whitegrid')
 
 def _plotly_show_alias(ctx):
-    def _show(fig):
+    def _show(fig, filename: str | None = None):
         if ctx is not None:
-            ctx.save_plotly(fig)
+            ctx.save_plotly(fig, filename)
         else:
             fig.show()
     return _show
@@ -175,7 +176,8 @@ def run_backtest(
         fig1.update_layout(title="<b>Hawkes Bursts — First 30 days (Real Ops View)</b>",
                    xaxis_title="days since last anomaly", yaxis_title="Intensity λ(t)",
                    template="plotly_dark", height=600)
-        _show(fig1) 
+        save_plotly_figure(fig1, "hawkes_bursts-sc1.png", scenario=1)
+        _show(fig1, "hawkes_bursts-sc1.png")
 
 # BSTS FORECAST
         months = np.arange(len(monthly_series))
@@ -197,7 +199,8 @@ def run_backtest(
             xaxis_title="Month Index", yaxis_title="Anomalies per Month",
             template="plotly_dark", height=580, barmode='overlay'
         )
-        _show(fig2)
+        save_plotly_figure(fig2, "bsts_forecast-sc1.png", scenario=1)
+        _show(fig2, "bsts_forecast-sc1.png")
         
 #  FINAL SUMMARY 
         print("\n" + "="*50)
@@ -355,7 +358,8 @@ def run_backtest(
         fig1.update_layout(title="<b>Hawkes Bursts — First 30 days (Scenario 2 NETTED)</b>",
                    xaxis_title="days since last anomaly", yaxis_title="Intensity λ(t)",
                    template="plotly_dark", height=600)
-        _show(fig1)
+        save_plotly_figure(fig1, "hawkes_bursts-sc2.png", scenario=2)
+        _show(fig1, "hawkes_bursts-sc2.png")
 
 # BSTS Forecast
         months = np.arange(len(monthly_series))
@@ -375,7 +379,8 @@ def run_backtest(
             xaxis_title="Month Index", yaxis_title="Anomalies per Month",
             template="plotly_dark", height=580, barmode='overlay'
         )
-        _show(fig2)
+        save_plotly_figure(fig2, "bsts_forecast-sc2.png", scenario=2)
+        _show(fig2, "bsts_forecast-sc2.png")
 
 # FINAL SUMMARY
         print("\n" + "="*50)

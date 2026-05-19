@@ -7,7 +7,7 @@ MISC_PATTERN = r"^(POST, DOT, AMAZON, BANK\s*CHARGES, CRUK, gift_, POSTAGE, M$, 
 
 
 def _resolve_path(file_path: str) -> Path:
-    """Search locations for the Excel file."""
+    """Search locations for the Excel file; download from UCI if missing."""
     for candidate in [
         Path(file_path),
         Path("dataset") / file_path,
@@ -16,6 +16,12 @@ def _resolve_path(file_path: str) -> Path:
     ]:
         if candidate.exists():
             return candidate
+
+    if file_path == "Online Retail.xlsx":
+        from src.data.bootstrap_dataset import ensure_online_retail_xlsx
+
+        return ensure_online_retail_xlsx(Path.cwd())
+
     raise FileNotFoundError(
         f"Cannot find '{file_path}'. Searched: dataset/, dataset/raw/, ../, cwd."
     )

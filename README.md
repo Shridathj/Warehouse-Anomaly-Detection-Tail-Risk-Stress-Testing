@@ -26,7 +26,12 @@ pip install -r requirements.txt
 
 # 2. Run the full pipeline (both scenarios)
 python run_src.py
+
+# 3. Interactive dashboard (deploy to Streamlit Cloud for heavy compute — see DEPLOYMENT.md)
+streamlit run streamlit_dashboard.py
 ```
+
+Pipeline plots from `run_src.py` are written to `plots/scenario1/` and `plots/scenario2/` (folder is wiped at each `run_src.py` run).
 
 > The pipeline executes global statistics, EVT/GPD modelling, delay simulation, VaR/ES, Monte-Carlo, causal analysis, Hawkes + BSTS forecasting, and quantitative backtesting.
 

@@ -7,6 +7,7 @@ from scipy.stats import gaussian_kde
 from datetime import timedelta
 import seaborn as sns
 import warnings
+from src.utils.plot_paths import save_matplotlib_figure
 warnings.filterwarnings("ignore")
 plt.style.use('seaborn-v0_8-whitegrid')
 
@@ -462,7 +463,7 @@ def run_quantitative_backtest(
             '[Scale-Corrected Backtest]',
             fontsize=16, fontweight='bold', y=1.01)
         plt.tight_layout()
-        plt.savefig('dragon_risk_report.png', dpi=160, bbox_inches='tight')
+        save_matplotlib_figure("dragon_risk_report-sc1.png", scenario=1, fig=fig, dpi=160)
         plt.show()
 
 # P&L SUMMARY
@@ -810,7 +811,7 @@ def run_quantitative_backtest(
              '[Scenario 2 NETTED]',
              fontsize=16, fontweight='bold', y=1.01)
         plt.tight_layout()
-        plt.savefig('dragon_risk_report_scenario2.png', dpi=160, bbox_inches='tight')
+        save_matplotlib_figure("dragon_risk_report-sc2.png", scenario=2, fig=fig, dpi=160)
         plt.show()
 
 # P&L SUMMARY

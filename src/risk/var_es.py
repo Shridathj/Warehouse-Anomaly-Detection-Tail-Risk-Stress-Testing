@@ -1,11 +1,12 @@
 # src/risk/var.py
 import warnings
+from src.utils.plot_paths import save_plotly_figure
 warnings.filterwarnings("ignore")
 
 def _plotly_show_alias(ctx):
-    def _show(fig):
+    def _show(fig, filename: str | None = None):
         if ctx is not None:
-            ctx.save_plotly(fig)
+            ctx.save_plotly(fig, filename)
         else:
             fig.show()
     return _show
@@ -128,8 +129,8 @@ def run_var(
         annotation_text="4h SLA Breach Threshold (revenue loss starts)",
         annotation_position="top right"
         )
-        
-        _show(fig)   
+        save_plotly_figure(fig, "var_es_plot-sc1.png", scenario=1)
+        _show(fig, "var_es_plot-sc1.png")   
 
         state["df"]                   = df
         state["total_gross"]          = total_gross
@@ -251,7 +252,8 @@ def run_var(
             annotation_position="top right"
         )
         
-        _show(fig)
+        save_plotly_figure(fig, "var_es_plot-sc2.png", scenario=2)
+        _show(fig, "var_es_plot-sc2.png")
         
         state["total_gross"]  = total_gross
         state["total_holding"]  = total_holding

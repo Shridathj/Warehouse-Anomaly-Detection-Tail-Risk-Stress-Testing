@@ -5,6 +5,7 @@ import matplotlib.ticker as mticker
 import seaborn as sns
 from scipy.stats import gaussian_kde
 import warnings
+from src.utils.plot_paths import save_matplotlib_figure
 warnings.filterwarnings("ignore")
 
 def _plotly_show_alias(ctx):
@@ -128,6 +129,7 @@ def run_monte_carlo(
         ax.legend(fontsize=11, loc='upper right', framealpha=0.9)
         ax.grid(True, alpha=0.25)
         plt.tight_layout()
+        save_matplotlib_figure("monte_carlo_loss_distribution-sc1.png", scenario=1, fig=fig)
         plt.show()
 
         state["annual_loss"] = annual_loss
@@ -236,6 +238,7 @@ def run_monte_carlo(
         ax.legend(fontsize=11, loc='upper right', framealpha=0.9)
         ax.grid(True, alpha=0.25)
         plt.tight_layout()
+        save_matplotlib_figure("monte_carlo_loss_distribution-sc2.png", scenario=2, fig=fig)
         plt.show()
 
         state["annual_loss"] = annual_loss
