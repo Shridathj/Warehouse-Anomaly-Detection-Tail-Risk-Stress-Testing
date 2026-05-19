@@ -59,9 +59,9 @@ BACKTEST_CONFIG = {
 # Causal inference configuration 
 CAUSAL_CONFIG = {
     "PSM_CALIPER": 0.005,  # Propensity score matching caliper
-    "PSM_SUBSAMPLE": 50_000,  # PS fitting subsample size
-    "QR_SUBSAMPLE": 100_000,  # Quantile regression subsample size
-    "BOOTSTRAP_REPS": 500,  # Bootstrap replications
+    "PSM_SUBSAMPLE": 250_000,  # PS fitting subsample size
+    "QR_SUBSAMPLE": 180_000,  # Quantile regression subsample size
+    "BOOTSTRAP_REPS": 400,  # Bootstrap replications
     "QUANTILES": [0.50, 0.75, 0.95, 0.99, 0.999],  # Quantiles for analysis
     "MAX_COUNTRIES": 8,  # Maximum countries to include in causal model
 }
