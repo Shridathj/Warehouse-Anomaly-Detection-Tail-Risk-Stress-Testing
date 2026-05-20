@@ -1,10 +1,10 @@
 # Deploy the dashboard to the cloud (Streamlit Community Cloud)
 
-Running `streamlit run streamlit_dashboard.py` on your laptop executes the full pipeline **on your laptop**. To avoid that, deploy the app to **Streamlit Community Cloud** (free tier). The browser UI stays light; heavy work runs on Streamlit’s servers.
+Running `python run run_src.py` on your laptop executes the full pipeline **on your laptop**. To avoid that, deploy the app to **Streamlit Community Cloud**. The browser UI stays light; heavy work runs on Streamlit’s servers.
 
 ## 1. Push the repo to GitHub
 
-Ensure your project is on GitHub (public repo works on the free tier).
+Ensure your project is on GitHub.
 
 ## 2. Deploy on Streamlit Cloud
 
@@ -61,7 +61,7 @@ Redeploy. Users then choose **View bundled results (instant, no compute)**.
 | `https://….streamlit.app` | Streamlit Cloud servers |
 | Bundled results mode | Nowhere (loads pre-saved outputs) |
 
-## Limits (free tier)
+## Limits
 
 Streamlit Cloud free apps have memory and CPU limits. If a live run fails with out-of-memory errors, use **bundled results** or upgrade the hosting plan.
 
