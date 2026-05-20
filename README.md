@@ -120,3 +120,4 @@ Apache 2.0
 
 **Author**: Pranav  
 **Repository**: [github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing](https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing)
+**Kaggle Notebook**: [kaggle.com/prnavjoshi/warehouse-anomaly-detection-stress-testing](https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing)
