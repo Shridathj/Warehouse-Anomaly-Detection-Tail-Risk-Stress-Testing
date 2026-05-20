@@ -1,6 +1,6 @@
 # Warehouse Anomaly Detection & Tail-Risk Stress Tester
 
-**Professional Portfolio Project** | Supply Chain Risk & Quantitative Modelling
+**Portfolio Project** | Supply Chain Risk & Quantitative Modelling
 
 Developed by Pranav | April 2026 (Updated May 2026)
 
