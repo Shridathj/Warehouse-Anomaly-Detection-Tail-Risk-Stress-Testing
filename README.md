@@ -24,11 +24,11 @@ git clone https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Str
 cd Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing
 pip install -r requirements.txt
 
-# 2. Run the full pipeline (both scenarios)
+# 2. Run the full pipeline locally (both scenarios) (**OPTIONAL**; 'results/ dashboard_cache/' directly loads the computed outputs and charts on to the streamlit dashborad)
 python run_src.py
 
-# 3. Interactive dashboard (deploy to Streamlit Cloud for heavy compute — see DEPLOYMENT.md)
-streamlit run streamlit_dashboard.py
+# 3. Interactive dashboard (for cloud deployment — see DEPLOYMENT.md)
+streamlit run streamlit_dashboard.py **OR** python -m streamlit run streamlit_dashboard.py
 ```
 
 Pipeline plots from `run_src.py` are written to `plots/scenario1/` and `plots/scenario2/` (folder is wiped at each `run_src.py` run).
