@@ -16,7 +16,7 @@ Using the UCI Online Retail dataset and industry-calibrated parameters, it combi
 
 ---
 
-## Quick Start
+## Quick Start locally (or click on the Streamlit link below)
 
 ```bash
 # 1. Clone and install
@@ -35,6 +35,8 @@ Pipeline plots from `run_src.py` are written to `plots/scenario1/` and `plots/sc
 
 > The pipeline executes global statistics, EVT/GPD modelling, delay simulation, VaR/ES, Monte-Carlo, causal analysis, Hawkes + BSTS forecasting, and quantitative backtesting.
 
+## Streamlit link
+Direct access: https://warehouse-anomaly-detection-tail-risk-stress-testing-jaag2aynu.streamlit.app
 ---
 
 ## Project Structure
