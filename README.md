@@ -80,6 +80,13 @@ The end-to-end pipeline follows nine rigorously linked stages:
 
 All synthetic parameters are grounded in the **2025 WERC DC Measures Report** and **CSCMP State of Logistics Report**.
 
+**Model Design Philosophy**  
+The Monte Carlo engine is implemented as a **marginal benchmark** in the Loss Distribution Approach (LDA) tradition. It uses the empirical daily dragon revenue distribution (lognormal with observed CV, capped at 3.0) and a constant empirical breach rate. The Hawkes + BSTS engine serves as the **dynamic refinement**, explicitly modelling self-excitation in dragon arrivals and producing a forward-looking frequency forecast. The long-run intensity of the stationary Hawkes process,  
+$$
+\lambda_\infty = \frac{\mu}{1 - \alpha/\beta},
+$$  
+provides a natural anchor for unconditional expected loss. In the current dataset, the two engines produce closely aligned central estimates of annual preventable loss. This consistency validates calibration, while the modest gap (Hawkes slightly lower) is consistent with the dynamic model respecting stationary intensity.
+
 ---
 
 ## Key Results (Directional)
