@@ -114,9 +114,11 @@ provides a natural anchor for unconditional expected loss. In the current datase
 
 ---
 
-## Limitations & Scope
+## Limitations & Inference
 
-This is an undergraduate/portfolio project built under real data constraints. All financial figures are **directional and illustrative only**. See `LIMITATIONS.md` and the project report for full honest framing.
+This is an undergraduate/portfolio project developed using publicly available retail transaction data under real-world constraints. All financial figures presented should therefore be interpreted as directional and illustrative rather than precise operational estimates.
+
+Full technical details, model diagnostics, additional caveats and key inference are documented in LIMITATIONS.md, INFERENCE.md and the project report.
 
 ---
 
