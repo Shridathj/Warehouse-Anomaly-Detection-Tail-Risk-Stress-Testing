@@ -35,7 +35,7 @@ Pipeline plots from `run_src.py` are written to `plots/scenario1/` and `plots/sc
 
 > The pipeline executes global statistics, EVT/GPD modelling, delay simulation, VaR/ES, Monte-Carlo, causal analysis, Hawkes + BSTS forecasting, and quantitative backtesting.
 
-## Streamlit link: https://warehouse-anomaly-detection-tail-risk-stress-testing-jaag2aynu.streamlit.app
+## Streamlit link:  [Streamlit/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing](https://warehouse-anomaly-detection-tail-risk-stress-testing.streamlit.app/)
 ---
 
 ## Project Structure
