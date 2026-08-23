@@ -2,7 +2,7 @@
 
 **Portfolio Project** | Supply Chain Risk & Quantitative Modelling
 
-Developed by Pranav | April 2026 (Updated May 2026)
+Developed by Pranav | April 2026 (Updated August 2026)
 
 ---
 
@@ -54,6 +54,7 @@ Pipeline plots from `run_src.py` are written to `plots/scenario1/` and `plots/sc
 │   └── utils/               
 ├── run_src.py                # Main entry point (orchestrates both scenarios)
 ├── project_report/           # Technical reports & PDFs
+│   └── A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf
 ├── results/                  # Generated plots and outputs
 ├── dataset/                  # Raw & cleaned data
 ├── requirements.txt
@@ -89,13 +90,19 @@ provides a natural anchor for unconditional expected loss. In the current datase
 
 ---
 
+## Technical report
+
+Student research monograph (August 2026): [A Comprehensive Approach to Tail-Risk Estimation via Extreme Value Theory](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf)
+
+---
+
 ## Key Results (Directional)
 
 - **Preventable annual loss** at 95th-percentile SLA: **£77k – £268k**
 - Maintaining **99th-percentile SLA** on high-value orders reduces exposure to near zero.
 - Backtesting shows acceptable violation rates under stated assumptions.
 
-> Full details, limitations, and methodology are available in `project_report/updated_anomaly_summary.pdf`.
+> Full details, limitations, and methodology: [`project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf`](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf). Older five-page summaries remain in `project_report/` for reference.
 
 ---
 
@@ -118,7 +125,7 @@ provides a natural anchor for unconditional expected loss. In the current datase
 
 This is an undergraduate/portfolio project developed using publicly available retail transaction data under real-world constraints. All financial figures presented should therefore be interpreted as directional and illustrative rather than precise operational estimates.
 
-Full technical details, model diagnostics, additional caveats and key inference are documented in LIMITATIONS.md, INFERENCE.md and the project report.
+Full technical details, model diagnostics, additional caveats and key inference are documented in LIMITATIONS.md, INFERENCE.md and the research monograph in `project_report/`.
 
 ---
 
