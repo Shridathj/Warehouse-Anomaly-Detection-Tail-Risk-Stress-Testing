@@ -1,8 +1,9 @@
 [theme]
-primaryColor = "#1A5276"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F4F6F9"
-textColor = "#1C2833"
+base = "light"
+primaryColor = "#B0893E"
+backgroundColor = "#F3EEE4"
+secondaryBackgroundColor = "#EBE4D6"
+textColor = "#14171C"
 font = "sans serif"
 
 [server]
@@ -16,6 +17,9 @@ enableStaticServing = true
 [browser]
 gatherUsageStats = false
 serverAddress = "localhost"
+
+[client]
+toolbarMode = "minimal"
 
 [runner]
 fastReruns = true

@@ -9,9 +9,10 @@ from pathlib import Path
 
 import plotly.io as pio
 
+from dashboard.paths import PATHS
 from dashboard.pipeline import StageOutput
 
-CACHE_ROOT = Path(__file__).resolve().parent.parent / "results" / "dashboard_cache"
+CACHE_ROOT = PATHS.dashboard_cache
 
 
 @dataclass
@@ -30,26 +31,34 @@ def _fig_to_png(fig) -> bytes:
 
 
 def serialize_stage(stage: StageOutput) -> SerializedStage:
+    pngs = list(stage.mpl_pngs or [])
+    pngs.extend(_fig_to_png(fig) for fig in stage.mpl_figs)
     return SerializedStage(
         title=stage.title,
         logs=stage.logs,
-        mpl_pngs=[_fig_to_png(fig) for fig in stage.mpl_figs],
+        mpl_pngs=pngs,
         plotly_jsons=[pio.to_json(fig) for fig in stage.plotly_figs],
     )
 
 
 def deserialize_stage(data: SerializedStage) -> StageOutput:
+    plotly_figs = []
+    for raw in getattr(data, "plotly_jsons", None) or []:
+        try:
+            plotly_figs.append(pio.from_json(raw))
+        except Exception:
+            continue
     return StageOutput(
-        title=data.title,
-        logs=data.logs,
+        title=getattr(data, "title", "Stage"),
+        logs=getattr(data, "logs", "") or "",
         mpl_figs=[],
-        plotly_figs=[pio.from_json(j) for j in data.plotly_jsons],
-        mpl_pngs=data.mpl_pngs,
+        plotly_figs=plotly_figs,
+        mpl_pngs=list(getattr(data, "mpl_pngs", None) or []),
     )
 
 
 def _cache_path(scenario_id: int) -> Path:
-    return CACHE_ROOT / f"scenario_{scenario_id}" / "stages.pkl"
+    return PATHS.scenario_bundle(int(scenario_id))
 
 
 def artifacts_exist(scenario_id: int) -> bool:
@@ -65,10 +74,17 @@ def save_artifacts(scenario_id: int, stages: list[StageOutput]) -> Path:
     return path
 
 
+def _coerce_payload(payload):
+    if isinstance(payload, dict) and "stages" in payload:
+        return payload["stages"]
+    return payload
+
+
 def load_artifacts(scenario_id: int) -> list[StageOutput] | None:
     path = _cache_path(scenario_id)
     if not path.exists():
         return None
     with path.open("rb") as fh:
-        payload: list[SerializedStage] = pickle.load(fh)
-    return [deserialize_stage(item) for item in payload]
+        payload = pickle.load(fh)
+    items = _coerce_payload(payload)
+    return [deserialize_stage(item) for item in items]

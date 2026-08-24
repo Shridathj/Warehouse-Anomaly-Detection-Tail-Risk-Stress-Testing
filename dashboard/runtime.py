@@ -43,11 +43,12 @@ def _sanitize_url(raw: str | None) -> str | None:
 
 def cloud_app_url() -> str | None:
     try:
-        url = st.secrets.get("dashboard", {}).get("cloud_url")
+        section = st.secrets.get("dashboard", {})
+        url = section.get("cloud_url") if isinstance(section, dict) else None
         safe = _sanitize_url(url)
         if safe:
             return safe
-    except (FileNotFoundError, AttributeError, KeyError, TypeError):
+    except Exception:
         pass
     return _sanitize_url(os.environ.get("DASHBOARD_CLOUD_URL"))
 
@@ -56,16 +57,3 @@ def compute_location_label() -> str:
     if is_cloud_host():
         return "Cloud (Streamlit server)"
     return "This laptop (local)"
-
-
-def render_compute_banner() -> None:
-    if is_cloud_host():
-        st.success("Compute runs on the **cloud server** — this device only shows the UI.")
-        return
-
-    url = cloud_app_url()
-    if url:
-        st.info(
-            "For faster runs without loading this laptop, use your cloud deployment: "
-            f"[Open cloud app]({url})"
-        )

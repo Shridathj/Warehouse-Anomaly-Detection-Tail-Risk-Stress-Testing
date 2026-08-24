@@ -1,51 +1,62 @@
 from __future__ import annotations
+
 from pathlib import Path
+
 import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 
-def _find_project_root() -> Path:
-    """Locate the project root by walking upward until 'static/' is found."""
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "static").is_dir():
-            return parent
-        if (parent / "pyproject.toml").exists() or (parent / "README.md").exists():
-            return parent
-    return current.parents[2] if len(current.parents) > 2 else current.parent
+from dashboard.cache import document_signature, load_document_bytes
+from dashboard.components.sidebar import PAGE_MONOGRAPH, PAGE_REPORT, render_page_pager
+from dashboard.store import STORE
+from dashboard.theme import chip
 
-_PDF_PATH = _find_project_root() / "static" / "updated_anomaly_summary.pdf"
 
-def render_report() -> None:
+def render_report(doc_id: str) -> None:
+    page = PAGE_REPORT if doc_id == "anomaly_summary" else PAGE_MONOGRAPH
+    doc = STORE.resolve_document(doc_id)
+
     st.markdown(
-        """
-        <div class="scenario-banner">
-          <h2>Project Report</h2>
-          <p>Updated anomaly summary — full findings and methodology.</p>
+        f"""
+        <div class="doc-banner">
+          <h2>{doc.title}</h2>
+          <p>{doc.description}</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    if not _PDF_PATH.exists():
-        st.error(f"PDF not found at: `{_PDF_PATH}`")
-        st.caption("Please ensure `updated_anomaly_summary.pdf` exists in the `static/` folder at the project root.")
-        return
-
-    # Primary viewer – reliable, no download prompt
-    pdf_viewer(
-        str(_PDF_PATH),
-        width=1000,           # adjust as needed (or use height=850)
-        render_text=True,     # optional: enables text selection / search
+    status = chip("on disk", "ok") if doc.exists else chip("missing", "miss")
+    st.markdown(
+        f"{status} · `{doc.display_path or doc.filename}` · {doc.size_label}",
+        unsafe_allow_html=True,
     )
 
-    st.divider()
+    if not doc.exists:
+        st.error("PDF not found.")
+        for path in doc.searched:
+            st.code(path, language=None)
+        render_page_pager(page, location="bottom")
+        return
 
-    # Always keep a clean download option
-    with open(_PDF_PATH, "rb") as f:
-        st.download_button(
-            label="⬇Download full PDF report",
-            data=f.read(),
-            file_name=_PDF_PATH.name,
-            mime="application/pdf",
-            use_container_width=True,
-        )
+    payload = load_document_bytes(doc.id, document_signature(doc.id))
+    if payload is None:
+        payload = Path(doc.path).read_bytes()
+
+    st.download_button(
+        label="Download PDF",
+        data=payload,
+        file_name=doc.filename,
+        mime="application/pdf",
+        width="stretch",
+        key=f"dl_{doc.id}",
+    )
+
+    pdf_viewer(
+        doc.path,
+        width="100%",
+        height=860,
+        render_text=True,
+        key=f"pdf_{doc.id}",
+    )
+
+    render_page_pager(page, location="bottom")
