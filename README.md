@@ -5,9 +5,9 @@ Pranav · April 2026 (updated August 2026)
 
 Stress-tests **preventable fulfilment loss** on high-value “dragon” orders when warehouse service degrades from a **99th-percentile SLA** to a **95th-percentile / reduced QoS** regime.
 
-The ticket file is the [UCI Online Retail](https://doi.org/10.24432/C5BW33) extract (UK giftware e-tailer, 1 Dec 2010 – 9 Dec 2011). It is treated as a **real retail order book**. It has no pick-complete time, no SLA clock, and no dragon label. Fulfilment delays are therefore **simulated** from log-normals whose means, dispersion and clips are calibrated to public summaries of the **2025 WERC DC Measures** and **CSCMP State of Logistics** reports — an **average-retail** delay regime, not a live WMS extract.
+The ticket file is the [UCI Online Retail](https://doi.org/10.24432/C5BW33) extract (1 Dec 2010 – 9 Dec 2011). It is treated as a **real retail order book**. It has no pick-complete time, no SLA clock, and no dragon label. Fulfilment delays are therefore **simulated** from log-normals whose means, dispersion and clips are calibrated to public summaries of the **2025 WERC DC Measures** and **CSCMP State of Logistics** reports — an **average-retail** delay regime, not a live WMS extract.
 
-Sterling figures are **directional Monte Carlo outputs under those assumptions**. They are not operational loss forecasts.
+Sterling figures are **directional outputs under those assumptions**. They are not operational loss forecasts.
 
 **Dashboard:** [warehouse-anomaly-detection-tail-risk-stress-testing.streamlit.app](https://warehouse-anomaly-detection-tail-risk-stress-testing.streamlit.app/)
 
@@ -23,33 +23,33 @@ Sterling figures are **directional Monte Carlo outputs under those assumptions**
 
 Dragons are a thin, **value-biased** sample (~3.2 bps of tickets gross, ~2.5 bps after netting), not a detector output. The 99th→95th language is **SLA / QoS degradation** on that expensive tail: configured dragon delays sit in a degraded service band relative to a tight on-time SLA. It is not a causal estimate of a live distribution centre.
 
-The **loss object is order value and unfulfilment**. Quantity EVT is a **domain diagnosis** (the demand tail is Fréchet; do not winsorise dragons). It is not the sterling engine.
+The **loss object is order value and unfulfilment**. Quantity EVT is a **domain diagnosis** (the demand tail is Fréchet; do not winsorise dragons).
 
 ---
 
-## Two exposure views (kept on purpose)
+## Two exposure views
 
 | | Scenario 1 — gross | Scenario 2 — netted |
 |---|---|---|
 | Map | Positive-quantity tickets after dropping returns | Net at `(CustomerID, SKU)` over the year; keep the max-pick row |
 | Question | Booked demand the warehouse must provision against | Demand that survives cancellations |
-| Why both | The 80,995-unit PAPER CRAFT ticket is booked then reversed within minutes. Gross is short-horizon operational exposure; net is the P&L residual. A WMS audit trail would choose. This file cannot. |
+| Why both | The 80,995-unit PAPER CRAFT ticket is booked then reversed within minutes. Gross is short-horizon operational exposure; net is the P&L residual |
 
 ---
 
 ## Pipeline
 
-Nine stages, in order. Later sterling numbers are **functionals of earlier objects**, not rivals for one “the” loss.
+Nine stages, in order. Later sterling numbers are **functionals of earlier objects**.
 
 1. **Ingest & clean** — UCI file, two maps above (`src/data/loader.py`).
-2. **Global structure** — moments, Pareto 80/20 on high-volume SKUs, daily ACF / Ljung–Box, Gaussianity tests. Serial dependence is **left in the series** (no declustering): Hill / GEV / POT remain i.i.d. estimators, used here to show that the data are both **dependent and extreme**.
+2. **Global structure** — moments, Pareto 80/20 on high-volume SKUs, daily ACF / Ljung–Box, Gaussianity tests. Serial dependence is **left in the series**: Hill / GEV / POT remain i.i.d. estimators, used here to show that the data are both **dependent and extreme**.
 3. **EVT on quantity** — Hill, Dekkers–Einmahl–de Haan moment, GEV block maxima, mean-excess slope. **Diagnosis only** (Fréchet, \(\xi \approx 0.5\)). An AMSE curve is drawn and **not** used to fit a GPD on quantity.
 4. **Delay simulation** — value-weighted dragons, uniform surge, independent log-normal delays, SLA bins (`src/config.py`).
 5. **Holding cost & unfulfilment** — linear carrying cost at 25% APR; unfulfilled-dragon revenue is the preventable piece.
 6. **Monte Carlo (LDA reference)** — i.i.d. log-normal daily dragon revenue × empirical breach rate × 30% margin. Marginal benchmark in the Loss Distribution Approach tradition. Hawkes clustering is **not** injected into these paths.
 7. **Causal contrasts** — surge ATE on net revenue is a **negative control** (surge is assigned, not a cause of value). The object of interest is the **quantile contrast of the dragon grouping on order value**.
-8. **Hawkes + Kalman** — exponential Hawkes MLE on dragon times; twelve-month count from a **Kalman local-linear-trend filter** (not a Bayesian BSTS). A Hawkes-modulated Monte Carlo is [future work](LIMITATIONS.md).
-9. **Purged expanding-window backtest** — window-matched VaR, Kupiec and Christoffersen. GPD MLE is fitted here, on **daily realised loss**, not on quantity.
+8. **Hawkes + Kalman** — exponential Hawkes MLE on dragon times; twelve-month count from a **Kalman local-linear-trend filter**. A Hawkes-modulated Monte Carlo is [future work](LIMITATIONS.md).
+9. **Purged expanding-window backtest** — window-matched VaR, Kupiec and Christoffersen. GPD MLE is fitted here, on **daily realised loss**.
 
 Full derivations, identities and implementation notes: [the monograph](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf).
 
@@ -73,11 +73,11 @@ The older one-line range **£77k–£268k** is the last-window backtest ES95 pai
 
 ---
 
-## Backtest, as implemented (kept)
+## Backtest
 
-The backtest module is a **replay of the delay DGP** (same seed), not a continuation of the delay-stage frame. That is why its coverage table is internally consistent with the printed engine.
+The backtest module is a **replay of the delay DGP**, not a continuation of the delay-stage frame. That is why its coverage table is internally consistent with the printed engine.
 
-Read it with the following in mind (documented here rather than silently rewritten):
+Read it with the following in mind:
 
 - **Window-matched VaR** compares a short test slice to a short-horizon MC quantile, not to an annual VaR. That is why exception counts stay small.
 - Test loss is \(V+H\) (gross); window VaR is margin-adjusted dragon revenue. A 0/34 violation rate is **not** a calibration theorem.
@@ -85,7 +85,6 @@ Read it with the following in mind (documented here rather than silently rewritt
 - **GPD threshold = 99th percentile of daily loss**, then the print asks for 95% VaR/ES. Unconstrained 95% sits below \(u\); the clamp makes “VaR95” = \(u\) and “ES95” the GPD mean above the 99th. Interpretable as **how bad a tail day is**, not as 95% daily VaR.
 - Last-window ES95 uses an **active-day mean**. The gap versus the LDA ES95 is a mean definition, not a discovery that the last window was four times riskier.
 - The P&L row that multiplies an already-margined MC ES by 30% again is a **second factor of \(g\)**. The headline to read is the pre-double-count MC ES95.
-- Scenario 1 annualises gross with 373 days rather than 374. Immaterial to the tail story.
 
 ---
 
@@ -135,9 +134,6 @@ Python ≥ 3.12 · pandas · NumPy · SciPy · statsmodels · Numba (Hawkes inte
 
 ---
 
-## Limits (short)
-
-Public retail tickets, 374 calendar days, synthetic delays. GPD and Hawkes are fitted in-sample. Monte Carlo paths are i.i.d.; a Hawkes-driven year remains future work. PSM has no love plot / double robustness. Kalman \(Q,R\) are fixed. One year is too short for coverage tests to have real power.
 
 Details: [LIMITATIONS.md](LIMITATIONS.md), [INFERENCE.md](INFERENCE.md), and the [monograph](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf).
 
