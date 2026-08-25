@@ -33,8 +33,7 @@ def run_global_statistics(
 ) -> dict:
     _show = _plotly_show_alias(ctx)
     state = {}
-    df = state.get("df", df)  
-    _show = _plotly_show_alias(ctx)
+    df = state.get("df", df)
     
     if 'OrderValue' not in df.columns and 'OrderValue_GBP' in df.columns:
         df = df.assign(OrderValue=df['OrderValue_GBP'])
@@ -50,7 +49,7 @@ def run_global_statistics(
 
 # WITHOUT PARETO FILTER
         global_qnt_mean = df['Quantity'].mean()
-        global_qnt_std = df['Quantity'].std()
+        global_qnt_std = df['Quantity'].std(ddof=1)
         global_qnt_cv = global_qnt_std / global_qnt_mean  
         global_qnt_skew = df['Quantity'].skew()
         global_qnt_kurt = df['Quantity'].kurtosis() + 3  # Pearson Kurtosis
@@ -65,7 +64,7 @@ def run_global_statistics(
 # Location
         global_qty_mean = quantities.mean()
         global_qty_median = np.median(quantities)
-        global_qty_mode = stats.mode(quantities)[0] if len(quantities) > 0 else np.nan 
+        global_qty_mode = stats.mode(quantities, keepdims=False)[0] if len(quantities) > 0 else np.nan 
 
 # Dispersion
         global_qty_std = np.std(quantities, ddof=1)  # Unbiased 
@@ -76,8 +75,8 @@ def run_global_statistics(
         global_qty_kurt = stats.kurtosis(quantities) + 3 #Pearson Kurtosis
 
 # Dependencies
-        qty_acf, _ = acf(daily_qty, nlags=10, fft=False, alpha=0.05)  # ACF
-        _, lb_q, lb_pval = acf(daily_qty, nlags=10, qstat=True)  # Ljung-Box 
+        qty_acf, _ = acf(daily_qty, nlags=10, fft=True, alpha=0.05)
+        _, lb_q, lb_pval = acf(daily_qty, nlags=10, qstat=True, fft=True) 
 
 # Tails
         global_qty_q95 = np.quantile(quantities, 0.95)
@@ -86,14 +85,14 @@ def run_global_statistics(
         u_tail = global_qty_q99
         exceedances = quantities[quantities > u_tail] - u_tail
         global_qty_mean_excess = exceedances.mean() if len(exceedances) > 0 else np.nan
-        n = len(df)
 
 # Tests
         z_scores = (quantities - global_qty_mean) / global_qty_std
         ks_stat, ks_pval = stats.kstest(z_scores, 'norm') # Kolmogorov - Smirnov Test
         ad_stat, ad_pval = sm.stats.normal_ad(quantities) # Anderson - Darling Test 
         SW_MAX_N = 5_000
-        sw_sample = (np.random.choice(quantities, SW_MAX_N, replace=False)
+        rng_sw = np.random.default_rng(314159)
+        sw_sample = (rng_sw.choice(quantities, SW_MAX_N, replace=False)
              if len(quantities) > SW_MAX_N
              else quantities)
         sw_stat, sw_pval = stats.shapiro(sw_sample)
@@ -108,7 +107,7 @@ def run_global_statistics(
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 # Original Histogram (without Pareto)
         axes[0].hist(quantities, bins=50, density=True, alpha=0.7, color='blue')
-        axes[0].set_title('Original Quantity Histogram (No Fit)')
+        axes[0].set_title('Quantity Histogram (Pareto-filtered SKUs)')
         axes[0].set_xlabel('Quantity')
         axes[0].set_ylabel('Density')
 
@@ -223,19 +222,14 @@ def run_global_statistics(
         global_qty_mean_excess = exceedances.mean() if len(exceedances) > 0 else np.nan
 
 # Tests
-        n = len(df)
-        k_hill = int(np.sqrt(n))
-        sorted_qty_desc = np.sort(quantities)[::-1]
-
-        if k_hill > 1 and k_hill < len(sorted_qty_desc):
-            pass
         z_scores = (quantities - global_qty_mean) / global_qty_std
         ks_stat, ks_pval = stats.kstest(z_scores, 'norm') # Kolmogorov - Smirnov Test
         ad_stat, ad_pval = sm.stats.normal_ad(quantities) # Anderson - Darling Test
 
         SW_MAX_N = 5000
-        sw_sample = np.random.choice(quantities, SW_MAX_N, replace=False) if len(quantities) > SW_MAX_N else quantities
-        sw_stat, sw_pval = stats.shapiro(sw_sample)  # Shapir - Wilkin Test
+        rng_sw = np.random.default_rng(314159)
+        sw_sample = rng_sw.choice(quantities, SW_MAX_N, replace=False) if len(quantities) > SW_MAX_N else quantities
+        sw_stat, sw_pval = stats.shapiro(sw_sample)
 
 # Context Values
         global_val_mean = df['OrderValue_GBP'].mean()
@@ -266,9 +260,6 @@ def run_global_statistics(
         ax.set_title('QQ-Plot: Net Quantity vs. Gaussian (Scenario 2)')
         save_matplotlib_figure("QQ-plot-sc2.png", scenario=2)
         plt.show()
-
-        print(f"SW Statistic : {sw_stat:.3f} (p-val: {sw_pval:.4f}; "
-            f"subsampled n={len(sw_sample):,}") 
 
         print(f"\nRaw rows           : {len(df):,}")
         print(f"Unique SKUs        : {df['SKU'].nunique():,}")
@@ -315,34 +306,38 @@ def run_global_statistics(
         print(f"99th %ile Value  : £ {global_val_q99:,.2f}")
         print(f"Max Order Value    : £ {global_val_max:,.2f}")
 
-        if gross_picks is not None and cancellations is not None:
-            print(f"Gross picks (pre-cancellation) : {len(gross_picks):,}")
-            print(f"Cancellations/Refunds detected : {len(cancellations):,}")
-            print(f"Cancelled volume removed                      : {len(gross_picks) - len(df):,} lines")
-            print(f"Data quality warning: ~{((len(gross_picks) - len(df)) / len(gross_picks) * 100):.1f}% of gross picks had partial/full cancellation")
-        if real_df is not None:
-            print(f"Real product transactions after misc + CustomerID filter: {len(real_df):,}")
- 
-        state["quantities"]   = quantities
-        state["daily_qty"]    = daily_qty
-        state["global_qty_mean"] = global_qty_mean
-        state["global_qty_std"] = global_qty_std
-        state["global_qty_kurt"] = global_qty_kurt
-        state["global_qty_skew"] = global_qty_skew      
-        state["qty_acf"] = qty_acf   
-        state["lb_pval"] = lb_pval   
-        state["global_qty_q95"] = global_qty_q95  
-        state["global_qty_q975"] = global_qty_q975
-        state["global_qty_q99"] = global_qty_q99
-        state["global_qty_mean_excess"] = global_qty_mean_excess
-        state["global_qty_q99"] = global_qty_q99
-        state["ks_stat"] = ks_stat
-        state["ks_pval"] = ks_pval
-        state["ad_stat"] = ad_stat
-        state["ad_pval"] = ad_pval
-        state["sw_stat"] = sw_stat  
-        state["sw_pval"] = sw_pval
-        state["high_vol_skus"] = high_vol_skus # For potential later use
+        gp_n = len(gross_picks) if gross_picks is not None else df.attrs.get("gross_picks_n")
+        ca_n = len(cancellations) if cancellations is not None else df.attrs.get("cancellations_n")
+        real_n = len(real_df) if real_df is not None else df.attrs.get("real_n")
+        if gp_n is not None and ca_n is not None:
+            print(f"Gross picks (pre-cancellation) : {gp_n:,}")
+            print(f"Cancellations/Refunds detected : {ca_n:,}")
+            print(f"Cancelled volume removed                      : {gp_n - len(df):,} lines")
+            if gp_n:
+                print(f"Data quality warning: ~{((gp_n - len(df)) / gp_n * 100):.1f}% of gross picks had partial/full cancellation")
+        if real_n is not None:
+            print(f"Real product transactions after misc + CustomerID filter: {real_n:,}")
+
+    state["quantities"]   = quantities
+    state["daily_qty"]    = daily_qty
+    state["global_qty_mean"] = global_qty_mean
+    state["global_qty_std"] = global_qty_std
+    state["global_qty_kurt"] = global_qty_kurt
+    state["global_qty_skew"] = global_qty_skew
+    state["qty_acf"] = qty_acf
+    state["lb_pval"] = lb_pval
+    state["global_qty_q95"] = global_qty_q95
+    state["global_qty_q975"] = global_qty_q975
+    state["global_qty_q99"] = global_qty_q99
+    state["global_qty_mean_excess"] = global_qty_mean_excess
+    state["ks_stat"] = ks_stat
+    state["ks_pval"] = ks_pval
+    state["ad_stat"] = ad_stat
+    state["ad_pval"] = ad_pval
+    state["sw_stat"] = sw_stat
+    state["sw_pval"] = sw_pval
+    state["high_vol_skus"] = high_vol_skus
+    state["df"] = df
     return state
 
 # EVT / GPD TAIL ANALYSIS
@@ -370,33 +365,48 @@ def run_evt_gpd(
         high_vol_skus = sku_vol[cum_vol <= 0.80].index.tolist()
         quantities = df[df['SKU'].isin(high_vol_skus)]['Quantity'].values.astype(np.float64)
 
-        n = len(df)
+        n = len(quantities)
         sorted_desc = np.sort(quantities)[::-1]
 
         print(f"EVT/GPD Test on High-Volume SKUs (n = {n:,})")
 
-# Hill Estimator 
-        k_stable = int(np.sqrt(n))
-        log_ratios = np.log(sorted_desc[:k_stable] / sorted_desc[k_stable])
-        hill_xi = np.mean(log_ratios)
+        hill_xi = np.nan
+        xi_moment = np.nan
+        xi_gev = np.nan
+        log_ratios = np.array([])
 
-# Moment Estimator 
-        M1 = np.mean(log_ratios)
-        M2 = np.mean(log_ratios**2)
-        ratio = M1**2 / M2
-        xi_moment = M1 + 1 - 0.5 * (1 - ratio)**(-1)   # standard 2nd-moment form
+# Hill Estimator
+        k_stable = min(int(np.sqrt(n)), len(sorted_desc) - 1)
+        if k_stable >= 2:
+            log_ratios = np.log(sorted_desc[:k_stable] / sorted_desc[k_stable])
+            hill_xi = np.mean(log_ratios)
 
-# GEV Block Maxima (monthly blocks)
+# Moment Estimator
+        if k_stable >= 2 and len(log_ratios) > 0:
+            M1 = np.mean(log_ratios)
+            M2 = np.mean(log_ratios**2)
+            ratio = M1**2 / M2 if M2 > 0 else np.nan
+            xi_moment = (
+                M1 + 1 - 0.5 * (1 - ratio)**(-1)
+                if not np.isnan(ratio) and ratio < 1
+                else np.nan
+            )
+
+# GEV Block Maxima (blocks of 30 consecutive filtered transactions)
         block_size = 30
-        blocks = [quantities[i:i+block_size] for i in range(0, n, block_size) if len(quantities[i:i+block_size]) == block_size]
-        maxima = np.array([np.max(b) for b in blocks])
-        c, mu_gev, sigma_gev = stats.genextreme.fit(maxima)
-        xi_gev = -c
+        maxima = np.array([
+            quantities[i:i + block_size].max()
+            for i in range(0, n - block_size + 1, block_size)
+            if len(quantities[i:i + block_size]) == block_size
+        ])
+        if len(maxima) >= 3:
+            c, mu_gev, sigma_gev = stats.genextreme.fit(maxima)
+            xi_gev = -c
 
         print("\nTail Index Estimators (convergence confirms heavy tails)")
-        print(f"  Hill ξ̂            : {hill_xi:.3f}")
-        print(f"  Moment ξ̂          : {xi_moment:.3f}")
-        print(f"  GEV Block-Max ξ̂   : {xi_gev:.3f}")
+        print(f"  Hill ξ̂            : {hill_xi:.3f}" if not np.isnan(hill_xi) else "  Hill ξ̂            : nan")
+        print(f"  Moment ξ̂          : {xi_moment:.3f}" if not np.isnan(xi_moment) else "  Moment ξ̂          : nan")
+        print(f"  GEV Block-Max ξ̂   : {xi_gev:.3f}" if not np.isnan(xi_gev) else "  GEV Block-Max ξ̂   : nan")
         print("  All ξ̂  > 0        : Fréchet domain confirmed (heavy tails)")
 
 # 4. Mean Excess Plot + Slope 
@@ -431,7 +441,9 @@ def run_evt_gpd(
 
         u_grid_amse = np.percentile(quantities, np.linspace(92, 98.5, 25))
         amse_vals = []
+        valid_u = []
         n_boot = 200
+        rng_amse = np.random.default_rng(314159)
 
         for u in u_grid_amse:
             exc = quantities[quantities > u] - u
@@ -440,38 +452,43 @@ def run_evt_gpd(
                 continue
             xi_boots = []
             for _ in range(n_boot):
-                boot = np.random.choice(exc, k_u, replace=True)
+                boot = rng_amse.choice(exc, k_u, replace=True)
                 s_boot = np.sort(boot)[::-1]
                 xi_boots.append(hill_jit(s_boot, k_u))
             bias2 = (np.mean(xi_boots) - hill_xi)**2
             var_est = np.var(xi_boots)
             amse_vals.append(bias2 + var_est)
+            valid_u.append(u)
 
-        opt_idx = np.argmin(amse_vals)
-        opt_u = u_grid_amse[opt_idx]
+        opt_u = np.nan
+        if len(amse_vals) > 0:
+            opt_idx = np.argmin(amse_vals)
+            opt_u = valid_u[opt_idx]
+            plt.figure(figsize=(12, 5))
+            plt.plot(valid_u, amse_vals, 'b-o')
+            plt.axvline(opt_u, color='r', linestyle='--', label=f'Optimal u = {opt_u:.1f}')
+            plt.xlabel('Threshold u')
+            plt.ylabel('AMSE')
+            plt.title('Asymptotic MSE for Optimal Threshold Selection')
+            plt.legend()
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            save_matplotlib_figure("amse_threshold-sc1.png", scenario=1)
+            plt.show()
+            print(f"AMSE-Optimal Threshold u     : {opt_u:.1f}")
+        else:
+            print("AMSE-Optimal Threshold u     : Not computable (insufficient tail data)")
 
-        plt.figure(figsize=(12, 5))
-        plt.plot(u_grid_amse[:len(amse_vals)], amse_vals, 'b-o')
-        plt.axvline(opt_u, color='r', linestyle='--', label=f'Optimal u = {opt_u:.1f}')
-        plt.xlabel('Threshold u')
-        plt.ylabel('AMSE')
-        plt.title('Asymptotic MSE for Optimal Threshold Selection')
-        plt.legend()
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        save_matplotlib_figure("amse_threshold-sc1.png", scenario=1)
-        plt.show()
-
-        print(f"AMSE-Optimal Threshold u     : {opt_u:.1f}")
-
-        print("\nEVT / GPD CONFIRMED")
-        print("Peaks-Over-Threshold + Generalized Pareto Distribution is confirmed")
+        print("\nEVT DOMAIN DIAGNOSIS")
+        print("Fréchet domain (ξ > 0) on high-volume SKU quantities; GPD MLE is fitted later on daily loss")
         
         # Store scenario 1 results to state
         state["hill_xi"]   = hill_xi
         state["xi_moment"] = xi_moment
         state["xi_gev"]    = xi_gev
         state["opt_u"]     = opt_u
+        state["slope"]     = slope
+        state["df"]        = df
        
     else:  # scenario == 2
         
@@ -497,7 +514,7 @@ def run_evt_gpd(
         log_ratios = np.array([])
 
 # Hill Estimator
-        n               = len(df)
+        n               = n_qty
         k_hill          = int(np.sqrt(n))
         sorted_qty_desc = np.sort(quantities)[::-1]
         k_hill          = min(k_hill, len(sorted_qty_desc) - 1)
@@ -517,7 +534,7 @@ def run_evt_gpd(
                 else np.nan
             )
 
-# GEV Block Maxima (monthly blocks)
+# GEV Block Maxima (blocks of 30 consecutive filtered transactions)
         block_size = 30
         maxima = np.array([
             quantities[i:i + block_size].max()
@@ -569,6 +586,7 @@ def run_evt_gpd(
         valid_u     = []
         n_boot      = 200
         opt_u       = np.nan
+        rng_amse    = np.random.default_rng(314159)
 
         for u in u_grid_amse:
             exc = quantities[quantities > u] - u
@@ -577,7 +595,7 @@ def run_evt_gpd(
                 continue
             xi_boots = np.empty(n_boot)
             for b in range(n_boot):
-                boot   = np.random.choice(exc, k_u, replace=True)
+                boot   = rng_amse.choice(exc, k_u, replace=True)
                 s_boot = np.sort(boot)[::-1]
                 xi_boots[b] = hill_jit(s_boot, k_u)
             bias2   = (xi_boots.mean() - hill_xi) ** 2 if not np.isnan(hill_xi) else 0.0
@@ -606,8 +624,8 @@ def run_evt_gpd(
         else:
             print("AMSE-Optimal Threshold u : Not computable (insufficient tail data)")
 
-        print("\nEVT / GPD CONFIRMED")
-        print("Peaks-Over-Threshold + Generalized Pareto Distribution is confirmed")
+        print("\nEVT DOMAIN DIAGNOSIS")
+        print("Fréchet domain (ξ > 0) on high-volume SKU quantities; GPD MLE is fitted later on daily loss")
 
         # store in state for run_param_summary and any downstream consumers
         state["hill_xi"]  = hill_xi
@@ -633,22 +651,24 @@ def run_sku_filter(
     _show = _plotly_show_alias(ctx)
  
     df_plot = df.copy()
-    if scenario == 1:
-        df_plot['Revenue'] = df_plot['Quantity'] * df_plot['UnitPrice']
-        top15 = (df_plot.groupby('StockCode')
-                .agg(Total_Quantity=('Quantity', 'sum'),
-                     Avg_Unit_Price=('UnitPrice', 'mean'),
-                     Total_Revenue=('Revenue', 'sum'))
-                .sort_values('Total_Quantity', ascending=False)
-                .head(15))
+    if 'Revenue' not in df_plot.columns:
+        if 'OrderValue_GBP' in df_plot.columns:
+            df_plot['Revenue'] = df_plot['OrderValue_GBP']
+        else:
+            df_plot['Revenue'] = df_plot['Quantity'] * df_plot['UnitPrice']
+
+    agg = dict(Total_Quantity=('Quantity', 'sum'), Total_Revenue=('Revenue', 'sum'))
+    if 'UnitPrice' in df_plot.columns:
+        agg['Avg_Unit_Price'] = ('UnitPrice', 'mean')
     else:
-        df_plot['Revenue'] = df_plot['OrderValue_GBP']
-        top15 = (df_plot.groupby('StockCode')
-                .agg(Total_Quantity=('Quantity', 'sum'),
-                     Avg_Unit_Price=('OrderValue', 'mean'),
-                     Total_Revenue=('Revenue', 'sum'))
-                .sort_values('Total_Quantity', ascending=False)
-                .head(15))
+        agg['Avg_Unit_Price'] = ('OrderValue_GBP', 'mean')
+
+    top15 = (
+        df_plot.groupby('StockCode')
+        .agg(**agg)
+        .sort_values('Total_Quantity', ascending=False)
+        .head(15)
+    )
 
     print(top15[['Total_Quantity', 'Avg_Unit_Price', 'Total_Revenue']].round(2))
 

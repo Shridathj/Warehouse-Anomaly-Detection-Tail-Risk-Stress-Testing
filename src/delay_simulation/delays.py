@@ -1,4 +1,4 @@
-# src/simulation/delays.py
+# src/delay_simulation/delays.py
 import numpy as np
 import pandas as pd
 import warnings

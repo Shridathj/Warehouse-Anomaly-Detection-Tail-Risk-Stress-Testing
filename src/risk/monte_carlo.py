@@ -118,8 +118,8 @@ def run_monte_carlo(
             ax.axvline(val, color=color, linestyle=ls, linewidth=lw, label=label)
 
         ax.set_title(
-            'Monte Carlo Annual Loss Distribution — Scenario 1'
-            f'~{target_annual} dragons/year (Hawkes+Kalman) | {N_PATHS:,} paths| '
+            'Monte Carlo Annual Loss Distribution — Scenario 1\n'
+            f'~{target_annual} dragons/year | {N_PATHS:,} paths | '
             f'CV={CV:.2f} | 30% margin',
             fontsize=14, pad=15
         )
@@ -228,7 +228,7 @@ def run_monte_carlo(
 
         ax.set_title(
             'Monte Carlo Annual Loss Distribution — Scenario 2 (NETTED)\n'
-            f'~{target_annual} dragons/year (Hawkes+Kalman) | {N_PATHS:,} paths | '
+            f'~{target_annual} dragons/year | {N_PATHS:,} paths | '
             f'CV={CV:.2f} | 30% margin',
             fontsize=14, pad=15
         )

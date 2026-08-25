@@ -103,12 +103,18 @@ def load_and_clean_uci(
     net_sales["NetQuantity"]   = net_sales["match_key"].map(positive_keys)
     net_sales["NetOrderValue"] = net_sales["NetQuantity"] * net_sales["UnitPrice"]
 
+    keep_cols = [
+        "NetQuantity", "NetOrderValue",
+        "SKU", "Date", "StockCode",
+        "InvoiceDate", "UnitPrice",
+    ]
+    if "Country" in net_sales.columns:
+        keep_cols.append("Country")
+    if "CustomerID" in net_sales.columns:
+        keep_cols.append("CustomerID")
+
     df = (
-        net_sales[[
-            "NetQuantity", "NetOrderValue",
-            "SKU", "Date", "StockCode",
-            "InvoiceDate", "UnitPrice",
-        ]]
+        net_sales[keep_cols]
         .rename(columns={
             "NetQuantity"   : "Quantity",
             "NetOrderValue" : "OrderValue_GBP",
@@ -116,10 +122,19 @@ def load_and_clean_uci(
         .query("Quantity > 0")
         .reset_index(drop=True)
     )
-    df["OrderValue"] = df["OrderValue_GBP"]  # keep alias for consistency with scenario 1   ]
+    df["OrderValue"] = df["OrderValue_GBP"]
+    df.attrs["gross_picks_n"] = int(len(gross_picks))
+    df.attrs["cancellations_n"] = int(len(cancellations))
+    df.attrs["real_n"] = int(len(real_df))
 
     print(
         f"SCENARIO 2 (NETTED): {len(df):,} rows after netting "
         f"({len(gross_picks):,} gross picks, {len(cancellations):,} cancellations removed)"
     )
+    if len(gross_picks) > 0:
+        cancelled_share = (len(gross_picks) - len(df)) / len(gross_picks) * 100
+        print(
+            f"Data quality warning: ~{cancelled_share:.1f}% of gross picks had "
+            f"partial/full cancellation"
+        )
     return df

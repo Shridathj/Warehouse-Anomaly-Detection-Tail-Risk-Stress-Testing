@@ -1,4 +1,4 @@
-# src/risk/var.py
+# src/risk/var_es.py
 import warnings
 from src.utils.plot_paths import save_plotly_figure
 warnings.filterwarnings("ignore")
@@ -146,8 +146,8 @@ def run_var(
 
     else: 
         import plotly.graph_objects as go
-        ANNUAL_HOLDING_RATE = 0.25          # 25% APR — WERC benchmark for working capital cost
-        SLA_BREACH_STATUSES = ['SLA Breach', 'Fulfillment Failure']
+        ANNUAL_HOLDING_RATE = cfg["ANNUAL_HOLDING_RATE"]
+        SLA_BREACH_STATUSES = cfg["SLA_LABELS"][2:]
 
         df['Days_Delayed']     = df['Delay_min'] / 1440.0
         df['Holding_Cost_GBP'] = df['OrderValue_GBP'] * df['Days_Delayed'] * ANNUAL_HOLDING_RATE
@@ -187,7 +187,7 @@ def run_var(
 
 # Output
         print("\n" + "="*50)
-        print("SCENARIO 2 — Gross Max-Risk VaR (NETTED DATA)")
+        print("SCENARIO 2 — Netted VaR")
         print("="*50)
         print(f"{'Metric':<45} {'Value':>20} {'% of Gross':>12}")
         print("-"*50)

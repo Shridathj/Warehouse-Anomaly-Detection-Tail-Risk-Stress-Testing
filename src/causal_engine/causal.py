@@ -1,4 +1,4 @@
-# src/causal/causal_engine.py
+# src/causal_engine/causal.py
 import gc
 import logging
 import numpy as np
@@ -43,7 +43,6 @@ def run_causal_engine(
     logging.basicConfig(level=logging.WARNING, format="%(asctime)s | %(levelname)s | %(message)s", force=True)
     logging.getLogger("kaleido").setLevel(logging.WARNING)
     logging.getLogger("kaleido").propagate = False
-    #rng = np.random.default_rng(314159)
         
     if scenario == 1:
         CALIPER = cfg["PSM_CALIPER"]  # Caliper for PSM matching
@@ -74,11 +73,13 @@ def run_causal_engine(
         # Country
                 if 'Country' not in df.columns:
                     df['Country'] = 'Unknown'
-                df['Country'] = df['Country'].fillna('Unknown').astype('category').cat.add_categories('Unknown')
+                df['Country'] = df['Country'].fillna('Unknown').astype(str).astype('category')
                 df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'], errors='coerce')
                 df['Hour'] = df['InvoiceDate'].dt.hour.fillna(-1).astype(np.int8)
                 df['date'] = df['InvoiceDate'].dt.date
                 df['Log_Quantity'] = np.log1p(df['Quantity'].clip(lower=1)).astype(np.float32)
+                if 'Net_Revenue_GBP' not in df.columns:
+                    df['Net_Revenue_GBP'] = df['OrderValue_GBP']
                 df['Net_Revenue_GBP'] = df['Net_Revenue_GBP'].astype(np.float32)
                 df['OrderValue'] = df['OrderValue_GBP'].astype(np.float32)
                 df['Will_Cancel'] = 0
@@ -228,7 +229,7 @@ def run_causal_engine(
                 self.annual_revenue_risk      = float(unfulfilled_rev * annualization)
                 self.annual_cancellation_loss = 0.0                       # Scenario 1 explicit zero
                 self.total_annual_impact      = float(self.annual_revenue_risk * gross_margin)
-                self.annual_dragons           = int(self.df['dragon'].sum() * annualization)
+                self.annual_dragons           = int(np.round(self.df['dragon'].sum() * annualization))
 
                 logging.info(
                     f"Annualized: {self.annual_dragons:,} dragons → "
@@ -271,12 +272,14 @@ def run_causal_engine(
                     text=[f"£{v:,.0f}" for v in ates],
                     textposition='outside',
                     marker_color=colors[:len(methods)]))
+                ymin = min(0.0, min(ates) * 1.15)
+                ymax = max(ates) * 1.35 if max(ates) > 0 else 1.0
                 fig.update_layout(
                     title="<b>Causal Lift + Dragon QTE Convergence (95th & 99.9th)</b>",
                     yaxis_title="Effect on Net Revenue (£)",
                     template="plotly_dark",
                     height=620,
-                    yaxis=dict(range=[0, max(ates) * 1.35]))
+                    yaxis=dict(range=[ymin, ymax]))
                 fig.add_annotation(
                     x=0.5, y=0.92, xref='paper', yref='paper',
                     text=f"<b>£{self.total_annual_impact:,.0f} ANNUAL IMPACT</b><br>{self.annual_dragons:,} dragons/year",
@@ -368,10 +371,16 @@ def run_causal_engine(
                 top_countries = df['Country'].value_counts().nlargest(MAX_COUNTRIES).index
                 df['Country'] = df['Country'].where(df['Country'].isin(top_countries), other='Other')
                 df['Country'] = df['Country'].astype('category')
-                df['date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
-                df['Hour'] = pd.to_datetime(df['Date'], errors='coerce').dt.hour.fillna(-1).astype(np.int8)
+                ts = pd.to_datetime(
+                    df['InvoiceDate'] if 'InvoiceDate' in df.columns else df['Date'],
+                    errors='coerce',
+                )
+                df['date'] = ts.dt.date
+                df['Hour'] = ts.dt.hour.fillna(-1).astype(np.int8)
                 df['Log_Quantity'] = np.log1p(df['Quantity'].clip(lower=1)).astype(np.float32)
-                df['Net_Revenue_GBP'] = df['OrderValue_GBP'].astype(np.float32)
+                if 'Net_Revenue_GBP' not in df.columns:
+                    df['Net_Revenue_GBP'] = df['OrderValue_GBP']
+                df['Net_Revenue_GBP'] = df['Net_Revenue_GBP'].astype(np.float32)
                 df['OrderValue'] = df['OrderValue_GBP'].astype(np.float32)
                 df['Will_Cancel'] = np.uint8(0)
                 self.df = df
@@ -565,7 +574,7 @@ def run_causal_engine(
                 self.annual_revenue_risk = float(unfulfilled_rev * annualization)
                 self.annual_cancellation_loss = 0.0
                 self.total_annual_impact = float(self.annual_revenue_risk * gross_margin)
-                self.annual_dragons = int(self.df['dragon'].sum() * annualization)
+                self.annual_dragons = int(np.round(self.df['dragon'].sum() * annualization))
                 logging.info(
                     f"Annualized: {self.annual_dragons:,} dragons → "
                     f"£{self.annual_revenue_risk:,.0f} gross risk → "
@@ -610,12 +619,14 @@ def run_causal_engine(
                     text=[f"£{v:,.0f}" for v in ates],
                     textposition='outside',
                     marker_color=colors[:len(methods)]))
+                ymin = min(0.0, min(ates) * 1.15)
+                ymax = max(ates) * 1.35 if max(ates) > 0 else 1.0
                 fig.update_layout(
                     title="<b>Causal Lift + Dragon QTE Convergence (Scenario 2 NETTED)</b>",
                     yaxis_title="Effect on Net Revenue (£)",
                     template="plotly_dark",
                     height=620,
-                    yaxis=dict(range=[0, max(ates) * 1.35]))
+                    yaxis=dict(range=[ymin, ymax]))
                 fig.add_annotation(
                     x=0.5, y=0.92, xref='paper', yref='paper',
                     text=(f"<b>£{self.total_annual_impact:,.0f} ANNUAL IMPACT</b>"
