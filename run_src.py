@@ -24,7 +24,7 @@ from src.global_statistics.global_stats import (
     run_sku_filter,
     run_param_summary,
 )
-from src.hwk_bsts_forecasting.mle_bsts import run_backtest as run_hawkes_bsts
+from src.hwk_kalman_forecasting.mle_kalman import run_backtest as run_hawkes_kalman
 from src.causal_engine.causal import run_causal_engine
 from src.backtest.backtest import run_quantitative_backtest
 from src.utils.plot_paths import plot_output_session, reset_plots_dir, _configure_plotly_export_logging
@@ -59,7 +59,7 @@ def run_scenario_pipeline(scenario: int, df) -> None:
     state = call(run_var, df, scenario=scenario, cfg=cfg, state=state)
     state = call(run_monte_carlo, df, scenario=scenario, cfg=cfg, state=state)
     state = call(run_causal_engine, df, scenario=scenario, cfg=cfg, state=state)
-    state = call(run_hawkes_bsts, df, scenario=scenario, cfg=cfg, state=state)
+    state = call(run_hawkes_kalman, df, scenario=scenario, cfg=cfg, state=state)
     state = call(run_quantitative_backtest, df, scenario=scenario, cfg=cfg, state=state)
 
 

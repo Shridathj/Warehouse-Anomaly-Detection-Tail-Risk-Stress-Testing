@@ -187,7 +187,7 @@ TOTAL ANNUAL IMPACT              £ 43,209
 Dragons locked: 127 | Target annual: 104
 Hawkes MLE: μ=0.0000019  α=0.990  β=410.349  (self-excitation confirmed)
 30-day expected dragons (Hawkes): 1.5
-BSTS 2012 forecast: 10/month → 120/year
+Kalman 2012 forecast: 10/month → 120/year
 Anomaly premium: £2,236/dragon
 2012 P&L bleed (30% margin): £41,835
 
@@ -198,7 +198,7 @@ MITIGATION SCENARIOS (tied to £60k ES95)
   Zero Anomalies (Target)        ->      0 dragons -> saves £41,835
 
 ==================================================
-HAWKES + BSTS SUMMARY — SCENARIO 1 
+HAWKES + Kalman SUMMARY — SCENARIO 1 
 ==================================================
 Total Dragons Detected      : 127
 2012 Forecast               : 120 dragons
@@ -442,7 +442,7 @@ TOTAL ANNUAL IMPACT                £     9,123
 Dragons locked (Scenario 2 NETTED): 66 | Target annual: 70
 Hawkes MLE (Scenario 2 NETTED): μ=0.0000020  α=0.990  β=405.170  (self-excitation confirmed)
 30-day expected dragons (Hawkes): 1.5
-BSTS 12-month forecast (Scenario 2 NETTED): 6/month → 72/year
+Kalman 12-month forecast (Scenario 2 NETTED): 6/month → 72/year
 Anomaly premium: £1,833/dragon
 2012 P&L bleed (30% margin): £10,197
 
@@ -453,7 +453,7 @@ MITIGATION SCENARIOS (tied to Scenario 2 tuned risk)
   Zero Anomalies (Target)        ->      0 dragons -> saves £10,197
 
 ==================================================
-HAWKES + BSTS SUMMARY — SCENARIO 2 
+HAWKES + Kalman SUMMARY — SCENARIO 2 
 ==================================================
 Total Dragons Detected      : 66
 2012 Forecast               : 72 dragons

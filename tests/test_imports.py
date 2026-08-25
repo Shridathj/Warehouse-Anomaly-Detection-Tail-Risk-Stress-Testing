@@ -36,8 +36,8 @@ class TestCoreImports:
         assert callable(run_param_summary)
 
     def test_forecasting_import(self):
-        from src.hwk_bsts_forecasting.mle_bsts import run_backtest as run_hawkes_bsts
-        assert callable(run_hawkes_bsts)
+        from src.hwk_kalman_forecasting.mle_kalman import run_backtest as run_hawkes_kalman
+        assert callable(run_hawkes_kalman)
 
     def test_causal_engine_import(self):
         from src.causal_engine.causal import run_causal_engine

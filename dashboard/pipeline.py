@@ -17,7 +17,7 @@ from src.global_statistics.global_stats import (
     run_param_summary,
     run_sku_filter,
 )
-from src.hwk_bsts_forecasting.mle_bsts import run_backtest as run_hawkes_bsts
+from src.hwk_kalman_forecasting.mle_kalman import run_backtest as run_hawkes_kalman
 from src.risk.monte_carlo import run_monte_carlo
 from src.risk.var_es import run_var
 from src.utils.plot_paths import plot_output_session
@@ -93,7 +93,7 @@ PIPELINE_STAGES = [
     ("3) Risk (VaR / ES)", run_var),
     ("3) Risk (Monte Carlo)", run_monte_carlo),
     ("4) Causal Engine", run_causal_engine),
-    ("5) HWK BSTS Forecasting", run_hawkes_bsts),
+    ("5) HWK Kalman Forecasting", run_hawkes_kalman),
     ("6) Backtest", run_quantitative_backtest),
 ]
 

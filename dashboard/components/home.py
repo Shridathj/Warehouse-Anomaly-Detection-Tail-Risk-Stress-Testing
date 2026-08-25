@@ -77,7 +77,7 @@ def render_home() -> None:
           <div class="rail-item"><span>03</span>VaR / ES</div>
           <div class="rail-item"><span>04</span>Monte Carlo</div>
           <div class="rail-item"><span>05</span>Causal engine</div>
-          <div class="rail-item"><span>06</span>Hawkes + BSTS</div>
+          <div class="rail-item"><span>06</span>Hawkes + Kalman</div>
           <div class="rail-item"><span>07</span>Purged backtest</div>
         </div>
         """,

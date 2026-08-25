@@ -2,9 +2,9 @@
 
 This is a public portfolio project built with only 374 days of open-source retail data.
 
-- **Monte Carlo vs Hawkes+BSTS**: The Monte Carlo functions as a **marginal benchmark** in the Loss Distribution Approach (LDA) tradition. It takes the empirical distribution of daily dragon revenue (fitted as lognormal with observed CV, capped at 3.0) and applies a constant empirical breach rate. Because it is calibrated directly to observed daily aggregates, it implicitly incorporates historical clustering effects into its marginal moments rather than modelling arrival dynamics explicitly.
+- **Monte Carlo vs Hawkes+Kalman**: The Monte Carlo functions as a **marginal benchmark** in the Loss Distribution Approach (LDA) tradition. It takes the empirical distribution of daily dragon revenue (fitted as lognormal with observed CV, capped at 3.0) and applies a constant empirical breach rate. Because it is calibrated directly to observed daily aggregates, it implicitly incorporates historical clustering effects into its marginal moments rather than modelling arrival dynamics explicitly.
 
-  The Hawkes + BSTS engine serves as the **dynamic refinement**. It explicitly captures self-excitation in dragon arrivals through the fitted Hawkes process and generates a forward-looking frequency forecast via BSTS. A key property of the stationary Hawkes process is that its long-run intensity converges to
+  The Hawkes + Kalman engine serves as the **dynamic refinement**. It explicitly captures self-excitation in dragon arrivals through the fitted Hawkes process and generates a forward-looking frequency forecast via Kalman. A key property of the stationary Hawkes process is that its long-run intensity converges to
   $$
   \lambda_\infty = \frac{\mu}{1 - \alpha/\beta},
   $$
@@ -18,12 +18,12 @@ This is a public portfolio project built with only 374 days of open-source retai
 - Quantile regression uses single random subsample (no bootstrap or clustering).
 - Delays are synthetic (calibrated to WERC/CSCMP 2025 public summaries) because real WMS telemetry is proprietary.
 - GPD and Hawkes fitted on full sample rather than rolling/purged.
-- BSTS uses conservative fixed Q/R priors (basic implementation).
+- Kalman uses conservative fixed Q/R priors (basic implementation).
 
 These are deliberate trade-offs given data constraints, compute and time. For more robustness and accuracy, the following integrations would be made:
-- A fully integrated approach e.g. Hawkes-driven simulation or propagating BSTS uncertainty.
+- A fully integrated approach e.g. Hawkes-driven simulation or propagating Kalman uncertainty.
 - Run daily rolling backtests + bootstrap.
 - Add balance diagnostics, double-robust estimation, and clustering.
 - Plug in real warehouse timestamps.
 
-The core mathematics (EVT/GPD, causal identification, self-exciting processes, Kalman BSTS) remain correct and directly solve the dragon tail-risk problem.
+The core mathematics (EVT/GPD, causal identification, self-exciting processes, Kalman) remain correct and directly solve the dragon tail-risk problem.

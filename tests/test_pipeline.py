@@ -58,7 +58,7 @@ def test_pipeline_execution_sequence():
         "run_var",
         "run_monte_carlo",
         "run_causal_engine",
-        "run_hawkes_bsts",
+        "run_hawkes_kalman",
         "run_quantitative_backtest",
     ]
 
@@ -72,7 +72,7 @@ def test_pipeline_execution_sequence():
         run_sku_filter,
         run_param_summary,
     )
-    from src.hwk_bsts_forecasting.mle_bsts import run_backtest as run_hawkes_bsts
+    from src.hwk_kalman_forecasting.mle_kalman import run_backtest as run_hawkes_kalman
     from src.causal_engine.causal import run_causal_engine
     from src.backtest.backtest import run_quantitative_backtest
 
@@ -85,7 +85,7 @@ def test_pipeline_execution_sequence():
         "run_var": run_var,
         "run_monte_carlo": run_monte_carlo,
         "run_causal_engine": run_causal_engine,
-        "run_hawkes_bsts": run_hawkes_bsts,
+        "run_hawkes_kalman": run_hawkes_kalman,
         "run_quantitative_backtest": run_quantitative_backtest,
     }
 

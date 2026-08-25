@@ -714,7 +714,7 @@ for val, color, ls, lw, label in [
 
 ax.set_title(
     'Monte Carlo Annual Loss Distribution — Scenario 2 (NETTED)\n'
-    f'~{target_annual} dragons/year (Hawkes+BSTS) | {N_PATHS:,} paths | '
+    f'~{target_annual} dragons/year (Hawkes+Kalman) | {N_PATHS:,} paths | '
     f'CV={CV:.2f} | 30% margin',
     fontsize=14, pad=15
 )
@@ -1063,10 +1063,10 @@ engine = CausalEngine(df=df, surge_idx=surge_idx, dragon_flag_col='Is_Dragon')
 engine.run_all()
 engine.summary_dashboard()
 
-# ## Hawkes MLE + BSTS
+# ## Hawkes MLE + Kalman
 
 
-# HAWKES MLE + BSTS 
+# HAWKES MLE + Kalman 
 import gc
 import logging
 import numpy as np
@@ -1135,13 +1135,13 @@ intensity = hawkes_intensity_numba(anomaly_times, t_future, mu, alpha, beta)
 expected_30d = np.trapz(intensity, t_future)
 print(f"30-day expected dragons (Hawkes): {expected_30d:.1f}")
 
-# BSTS (12-month forecast)
+# Kalman (12-month forecast)
 anomaly_df['Month'] = anomaly_df['Date'].dt.to_period('M')
 monthly_anomalies = anomaly_df.groupby('Month').size()
 full_range = pd.period_range(monthly_anomalies.index.min(), monthly_anomalies.index.max(), freq='M')
 monthly_series = monthly_anomalies.reindex(full_range, fill_value=0).values.astype(np.float64)
 
-# BSTS (local-level + seasonal)
+# Kalman (local-level + seasonal)
 season = 12
 state_dim = 2 + season - 1
 F = np.eye(state_dim, dtype=np.float64)
@@ -1175,7 +1175,7 @@ for i in range(12):
 
 proj_monthly = max(6, min(int(np.round(np.mean(proj[-3:]))), 10))
 annual_2012 = proj_monthly * 12
-print(f"BSTS 12-month forecast (Scenario 2 NETTED): {proj_monthly}/month → {annual_2012:,}/year")
+print(f"Kalman 12-month forecast (Scenario 2 NETTED): {proj_monthly}/month → {annual_2012:,}/year")
 
 # P&L
 unfulfilled_rev = df.loc[df['Unfulfilled_Dragon'], 'OrderValue_GBP'].sum()
@@ -1217,13 +1217,13 @@ fig1.update_layout(title="<b>Hawkes Bursts — First 30 days (Scenario 2 NETTED)
                    template="plotly_dark", height=600)
 fig1.show()
 
-# BSTS Forecast
+# Kalman Forecast
 months = np.arange(len(monthly_series))
 forecast_months = np.arange(len(monthly_series), len(monthly_series)+12)
 
 fig2 = go.Figure()
 fig2.add_trace(go.Bar(x=months, y=monthly_series, name='Observed', marker_color='lightgray'))
-fig2.add_trace(go.Scatter(x=months, y=in_sample_fit, mode='lines', name='BSTS Fit', line=dict(color='cyan', width=2)))
+fig2.add_trace(go.Scatter(x=months, y=in_sample_fit, mode='lines', name='Kalman Fit', line=dict(color='cyan', width=2)))
 fig2.add_trace(go.Scatter(x=forecast_months, y=proj, mode='lines', name='12-Month Forecast', line=dict(color='gold', width=4)))
 fig2.add_hline(y=8, line_dash="dash", line_color="lime", annotation_text="Target: 8/month")
 fig2.add_hline(y=0, line_dash="solid", line_color="red", annotation_text="Zero Anomalies")
@@ -1231,7 +1231,7 @@ fig2.add_annotation(x=0.02, y=0.95, xref='paper', yref='paper',
                     text=f"<b>2012 BLEED: £ {base_annual_bleed:,.0f}</b><br>ZERO → £0",
                     showarrow=False, font_size=13, bgcolor='gold', font_color='black')
 fig2.update_layout(
-    title="<b>BSTS: 12-MONTH FORECAST → ZERO TARGET (Scenario 2 NETTED)</b>",
+    title="<b>Kalman: 12-MONTH FORECAST → ZERO TARGET (Scenario 2 NETTED)</b>",
     xaxis_title="Month Index", yaxis_title="Anomalies per Month",
     template="plotly_dark", height=580, barmode='overlay'
 )
@@ -1239,7 +1239,7 @@ fig2.show()
 
 # FINAL SUMMARY
 print("\n" + "="*50)
-print("HAWKES + BSTS SUMMARY — SCENARIO 2 ")
+print("HAWKES + Kalman SUMMARY — SCENARIO 2 ")
 print("="*50)
 print(f"Total Dragons Detected      : {len(anomaly_times):,}")
 print(f"2012 Forecast               : {annual_2012:,} dragons")
