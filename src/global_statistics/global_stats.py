@@ -632,29 +632,23 @@ def run_sku_filter(
         state = {}
     _show = _plotly_show_alias(ctx)
  
+    df_plot = df.copy()
     if scenario == 1:
-        df_plot = df.copy()
         df_plot['Revenue'] = df_plot['Quantity'] * df_plot['UnitPrice']
-
         top15 = (df_plot.groupby('StockCode')
-                .agg(Total_Quantity=('Quantity','sum'),
-                    Avg_Unit_Price=('UnitPrice','mean'),
-                    Total_Revenue=('Revenue','sum'))
+                .agg(Total_Quantity=('Quantity', 'sum'),
+                     Avg_Unit_Price=('UnitPrice', 'mean'),
+                     Total_Revenue=('Revenue', 'sum'))
                 .sort_values('Total_Quantity', ascending=False)
                 .head(15))
-
-        print(top15[['Total_Quantity', 'Avg_Unit_Price', 'Total_Revenue']].round(2))
-
     else:
-        df_plot = df.copy()
         df_plot['Revenue'] = df_plot['OrderValue_GBP']
-
-    top15 = (df_plot.groupby('StockCode')
-            .agg(Total_Quantity=('Quantity','sum'),
-                Avg_Unit_Price=('OrderValue','mean'),      
-                Total_Revenue=('Revenue','sum'))
-            .sort_values('Total_Quantity', ascending=False)
-            .head(15))
+        top15 = (df_plot.groupby('StockCode')
+                .agg(Total_Quantity=('Quantity', 'sum'),
+                     Avg_Unit_Price=('OrderValue', 'mean'),
+                     Total_Revenue=('Revenue', 'sum'))
+                .sort_values('Total_Quantity', ascending=False)
+                .head(15))
 
     print(top15[['Total_Quantity', 'Avg_Unit_Price', 'Total_Revenue']].round(2))
 

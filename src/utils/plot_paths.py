@@ -8,6 +8,7 @@ All saved figures go under:
 
 from __future__ import annotations
 
+import logging
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
@@ -20,6 +21,26 @@ _enabled: bool = False
 _current_scenario: int | None = None
 _auto_mpl_counter: int = 0
 _orig_plt_show = None
+
+
+def _configure_plotly_export_logging() -> None:
+    """Mute Kaleido/Chromium export logs while preserving app logging."""
+    logging.disable(logging.INFO)
+    logging.getLogger().setLevel(logging.WARNING)
+    for logger_name in (
+        "kaleido",
+        "kaleido._backend",
+        "kaleido._chrome",
+        "plotly",
+        "selenium",
+        "chromium",
+    ):
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(logging.WARNING)
+        logger.propagate = False
+
+
+_configure_plotly_export_logging()
 
 
 def scenario_dir(scenario: int) -> Path:

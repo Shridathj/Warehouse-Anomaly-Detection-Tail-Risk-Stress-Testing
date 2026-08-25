@@ -35,7 +35,10 @@ def run_backtest(
     df = state.get("df", df)
     _show = _plotly_show_alias(ctx)
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+    logging.disable(logging.INFO)
+    logging.basicConfig(level=logging.WARNING, format="%(asctime)s | %(levelname)s | %(message)s", force=True)
+    logging.getLogger("kaleido").setLevel(logging.WARNING)
+    logging.getLogger("kaleido").propagate = False
     #rng = np.random.default_rng(314159)
     
     if scenario == 1:

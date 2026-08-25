@@ -3,6 +3,19 @@ Tests for pipeline structure, configuration, and orchestration integrity.
 """
 
 import inspect
+import logging
+
+
+def test_plotly_export_logging_suppressed():
+    """Kaleido image export should not emit noisy INFO-level browser logs."""
+    from src.utils.plot_paths import _configure_plotly_export_logging
+
+    logger = logging.getLogger("kaleido")
+    logger.setLevel(logging.INFO)
+
+    _configure_plotly_export_logging()
+
+    assert logger.level == logging.WARNING
 
 
 def test_both_scenarios_exist(scenario_configs):

@@ -4,8 +4,12 @@ Execution of the anomaly detection pipeline.
 Run from repository root:
     python run_src.py
 """
+import logging
 import sys
 from pathlib import Path
+
+logging.disable(logging.INFO)
+logging.getLogger().setLevel(logging.WARNING)
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -23,7 +27,9 @@ from src.global_statistics.global_stats import (
 from src.hwk_bsts_forecasting.mle_bsts import run_backtest as run_hawkes_bsts
 from src.causal_engine.causal import run_causal_engine
 from src.backtest.backtest import run_quantitative_backtest
-from src.utils.plot_paths import plot_output_session, reset_plots_dir
+from src.utils.plot_paths import plot_output_session, reset_plots_dir, _configure_plotly_export_logging
+
+_configure_plotly_export_logging()
 
 
 def call(fn, df, **kwargs):
