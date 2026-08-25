@@ -1,140 +1,150 @@
-# Warehouse Anomaly Detection & Tail-Risk Stress Tester
+# Warehouse Anomaly Detection & Tail-Risk Stress Testing
 
-**Portfolio Project** | Supply Chain Risk & Quantitative Modelling
+**Portfolio project** · Supply-chain risk · Quantitative modelling  
+Pranav · April 2026 (updated August 2026)
 
-Developed by Pranav | April 2026 (Updated August 2026)
+Stress-tests **preventable fulfilment loss** on high-value “dragon” orders when warehouse service degrades from a **99th-percentile SLA** to a **95th-percentile / reduced QoS** regime.
 
----
+The ticket file is the [UCI Online Retail](https://doi.org/10.24432/C5BW33) extract (UK giftware e-tailer, 1 Dec 2010 – 9 Dec 2011). It is treated as a **real retail order book**. It has no pick-complete time, no SLA clock, and no dragon label. Fulfilment delays are therefore **simulated** from log-normals whose means, dispersion and clips are calibrated to public summaries of the **2025 WERC DC Measures** and **CSCMP State of Logistics** reports — an **average-retail** delay regime, not a live WMS extract.
 
-## Abstract
+Sterling figures are **directional Monte Carlo outputs under those assumptions**. They are not operational loss forecasts.
 
-This project quantifies the **preventable financial loss** arising from extreme high-value “dragon” orders when warehouse fulfilment service levels degrade from the 99th to the 95th percentile.
-
-Using the UCI Online Retail dataset and industry-calibrated parameters, it combines **Extreme Value Theory (EVT)**, **Monte-Carlo simulation**, **Hawkes processes**, custom **Bayesian Structural Time Series (Kalman)**, causal inference, and rigorous purged backtesting to measure tail-risk exposure in warehouse operations.
-
-**Key Finding**: Maintaining 99th-percentile service levels on high-value orders can eliminate nearly all preventable tail-risk loss.
+**Dashboard:** [warehouse-anomaly-detection-tail-risk-stress-testing.streamlit.app](https://warehouse-anomaly-detection-tail-risk-stress-testing.streamlit.app/)
 
 ---
 
-## Quick Start locally (or click on the Streamlit link below)
+## What is observed, and what is assigned
+
+| Object | Status |
+|---|---|
+| Invoice, SKU, quantity, price, customer, country, timestamp | Observed |
+| Fulfilment delay, SLA label, dragon / surge tier | **Assigned** (value-biased sample + log-normal delays) |
+| Unfulfilled dragon | Dragon whose simulated delay clears the breach threshold (4 h Scenario 1, 6 h Scenario 2) |
+
+Dragons are a thin, **value-biased** sample (~3.2 bps of tickets gross, ~2.5 bps after netting), not a detector output. The 99th→95th language is **SLA / QoS degradation** on that expensive tail: configured dragon delays sit in a degraded service band relative to a tight on-time SLA. It is not a causal estimate of a live distribution centre.
+
+The **loss object is order value and unfulfilment**. Quantity EVT is a **domain diagnosis** (the demand tail is Fréchet; do not winsorise dragons). It is not the sterling engine.
+
+---
+
+## Two exposure views (kept on purpose)
+
+| | Scenario 1 — gross | Scenario 2 — netted |
+|---|---|---|
+| Map | Positive-quantity tickets after dropping returns | Net at `(CustomerID, SKU)` over the year; keep the max-pick row |
+| Question | Booked demand the warehouse must provision against | Demand that survives cancellations |
+| Why both | The 80,995-unit PAPER CRAFT ticket is booked then reversed within minutes. Gross is short-horizon operational exposure; net is the P&L residual. A WMS audit trail would choose. This file cannot. |
+
+---
+
+## Pipeline
+
+Nine stages, in order. Later sterling numbers are **functionals of earlier objects**, not rivals for one “the” loss.
+
+1. **Ingest & clean** — UCI file, two maps above (`src/data/loader.py`).
+2. **Global structure** — moments, Pareto 80/20 on high-volume SKUs, daily ACF / Ljung–Box, Gaussianity tests. Serial dependence is **left in the series** (no declustering): Hill / GEV / POT remain i.i.d. estimators, used here to show that the data are both **dependent and extreme**.
+3. **EVT on quantity** — Hill, Dekkers–Einmahl–de Haan moment, GEV block maxima, mean-excess slope. **Diagnosis only** (Fréchet, \(\xi \approx 0.5\)). An AMSE curve is drawn and **not** used to fit a GPD on quantity.
+4. **Delay simulation** — value-weighted dragons, uniform surge, independent log-normal delays, SLA bins (`src/config.py`).
+5. **Holding cost & unfulfilment** — linear carrying cost at 25% APR; unfulfilled-dragon revenue is the preventable piece.
+6. **Monte Carlo (LDA reference)** — i.i.d. log-normal daily dragon revenue × empirical breach rate × 30% margin. Marginal benchmark in the Loss Distribution Approach tradition. Hawkes clustering is **not** injected into these paths.
+7. **Causal contrasts** — surge ATE on net revenue is a **negative control** (surge is assigned, not a cause of value). The object of interest is the **quantile contrast of the dragon grouping on order value**.
+8. **Hawkes + Kalman** — exponential Hawkes MLE on dragon times; twelve-month count from a **Kalman local-linear-trend filter** (not a Bayesian BSTS). A Hawkes-modulated Monte Carlo is [future work](LIMITATIONS.md).
+9. **Purged expanding-window backtest** — window-matched VaR, Kupiec and Christoffersen. GPD MLE is fitted here, on **daily realised loss**, not on quantity.
+
+Full derivations, identities and implementation notes: [the monograph](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf).
+
+---
+
+## How to read the sterling numbers
+
+They answer different questions. Do not add them.
+
+| Functional | What it is | Typical headline (directional) |
+|---|---|---|
+| LDA Monte Carlo ES95 (`src/risk/monte_carlo.py`) | One-year margin-adjusted preventable loss; **all calendar days** in the daily mean | ~£60k gross / ~£12k netted |
+| Causal “annual impact” | Same identity: \(g \times (365/\Delta) \times\) unfulfilled-dragon revenue | ~£43k / ~£9k |
+| Last-window backtest MC ES95 | Same path equation, but the daily mean is over **dragon-active days** in the last train slice | ~£248k / ~£77k |
+| GPD “VaR95 / ES95” on daily loss | POT above the **99th** percentile of daily realised loss; printed 95% VaR is clamped to that threshold, so ES95 is a **far-tail daily mean excess**, not a 95% daily VaR | daily, not annual |
+| \(p_{99}(\ell_t) \times 252\) | Stress exhibit (a bad day, every trading day). Not an expectation | — |
+
+The older one-line range **£77k–£268k** is the last-window backtest ES95 pair. It is the **aggressive / bad-year** exhibit, not a revision of the LDA ~£60k / ~£12k.
+
+“Zero anomalies → £0” and the reroute / safety-stock rows are **proportional-reduction arithmetic** on a count, not estimated treatment effects of holding 99th-percentile service.
+
+---
+
+## Backtest, as implemented (kept)
+
+The backtest module is a **replay of the delay DGP** (same seed), not a continuation of the delay-stage frame. That is why its coverage table is internally consistent with the printed engine.
+
+Read it with the following in mind (documented here rather than silently rewritten):
+
+- **Window-matched VaR** compares a short test slice to a short-horizon MC quantile, not to an annual VaR. That is why exception counts stay small.
+- Test loss is \(V+H\) (gross); window VaR is margin-adjusted dragon revenue. A 0/34 violation rate is **not** a calibration theorem.
+- **Kupiec p = 1 at zero violations** overstates the evidence. With ~34 weekly windows and \(p=0.05\), zero exceptions is unsurprising (expected ≈ 1.7). The correct LR at \(k=0\) is a borderline non-rejection (~0.06), not a perfect score. Power is low on one year of tickets.
+- **GPD threshold = 99th percentile of daily loss**, then the print asks for 95% VaR/ES. Unconstrained 95% sits below \(u\); the clamp makes “VaR95” = \(u\) and “ES95” the GPD mean above the 99th. Interpretable as **how bad a tail day is**, not as 95% daily VaR.
+- Last-window ES95 uses an **active-day mean**. The gap versus the LDA ES95 is a mean definition, not a discovery that the last window was four times riskier.
+- The P&L row that multiplies an already-margined MC ES by 30% again is a **second factor of \(g\)**. The headline to read is the pre-double-count MC ES95.
+- Scenario 1 annualises gross with 373 days rather than 374. Immaterial to the tail story.
+
+---
+
+## Quick start
 
 ```bash
-# 1. Clone and install
 git clone https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing.git
 cd Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing
 pip install -r requirements.txt
 
-# 2. Run the full pipeline locally (both scenarios) (**OPTIONAL**; 'results/ dashboard_cache/' directly loads the computed outputs and charts on to the streamlit dashborad)
+# optional — full pipeline for both scenarios (wipes plots/scenario1 and plots/scenario2)
 python run_src.py
 
-# 3. Interactive dashboard (for cloud deployment — see DEPLOYMENT.md)
-streamlit run streamlit_dashboard.py **OR** python -m streamlit run streamlit_dashboard.py
+# dashboard (uses results/dashboard_cache if present)
+streamlit run streamlit_dashboard.py
 ```
 
-Pipeline plots from `run_src.py` are written to `plots/scenario1/` and `plots/scenario2/` (folder is wiped at each `run_src.py` run).
+Seeds and SLA / delay / margin parameters live in `src/config.py`. Cloud deploy: [DEPLOYMENT.md](DEPLOYMENT.md).
 
-> The pipeline executes global statistics, EVT/GPD modelling, delay simulation, VaR/ES, Monte-Carlo, causal analysis, Hawkes + Kalman forecasting, and quantitative backtesting.
-
-## Streamlit link:  [Streamlit/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing](https://warehouse-anomaly-detection-tail-risk-stress-testing.streamlit.app/)
 ---
 
-## Project Structure
+## Layout
 
 ```
-.
-├── src/                      # Core modular Python package (do not modify lightly)
-│   ├── config.py
-│   ├── data/
-│   ├── delay_simulation/
-│   ├── global_statistics/
-│   ├── risk/                 # VaR, ES, Monte-Carlo
-│   ├── causal_engine/
-│   ├── hwk_kalman_forecasting/ # Custom Hawkes MLE + state-space Kalman
-│   ├── backtest/
-│   └── utils/               
-├── run_src.py                # Main entry point (orchestrates both scenarios)
-├── project_report/           # Technical reports & PDFs
-│   └── A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf
-├── results/                  # Generated plots and outputs
-├── dataset/                  # Raw & cleaned data
-├── requirements.txt
-├── pyproject.toml
-├── Makefile
-└── README.md
+src/
+  config.py
+  data/                    # UCI load, gross vs netted maps
+  delay_simulation/        # value-biased dragons, log-normal delays, SLA
+  global_statistics/       # moments, Pareto filter, quantity EVT diagnosis
+  risk/                    # holding / unfulfilment, LDA Monte Carlo
+  causal_engine/           # surge ATE (negative control), dragon QTE
+  hwk_kalman_forecasting/  # Hawkes MLE + Kalman local linear trend
+  backtest/                # purged windows, daily-loss GPD, Kupiec / Christoffersen
+  utils/
+run_src.py
+streamlit_dashboard.py
+project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf
+LIMITATIONS.md
+INFERENCE.md
 ```
 
 ---
 
-## Methodology
+## Stack
 
-The end-to-end pipeline follows nine rigorously linked stages:
-
-1. Data ingestion & cleaning
-2. Global diagnostics & Pareto filtering
-3. Extreme Value Theory (EVT/GPD) tail modelling
-4. Realistic delay & anomaly simulation (industry-calibrated)
-5. Monte-Carlo VaR & Expected Shortfall
-6. Causal validation (PSM + quantile regression)
-7. Hawkes process + custom Kalman forecasting
-8. Purged expanding-window backtesting (Kupiec & Christoffersen tests)
-9. Reporting & stress interpretation
-
-All synthetic parameters are grounded in the **2025 WERC DC Measures Report** and **CSCMP State of Logistics Report**.
-
-**Model Design Philosophy**  
-The Monte Carlo engine is implemented as a **marginal benchmark** in the Loss Distribution Approach (LDA) tradition. It uses the empirical daily dragon revenue distribution (lognormal with observed CV, capped at 3.0) and a constant empirical breach rate. The Hawkes + Kalman engine serves as the **dynamic refinement**, explicitly modelling self-excitation in dragon arrivals and producing a forward-looking frequency forecast. The long-run intensity of the stationary Hawkes process,  
-$$
-\lambda_\infty = \frac{\mu}{1 - \alpha/\beta},
-$$  
-provides a natural anchor for unconditional expected loss. In the current dataset, the two engines produce closely aligned central estimates of annual preventable loss. This consistency validates calibration, while the modest gap (Hawkes slightly lower) is consistent with the dynamic model respecting stationary intensity.
+Python ≥ 3.12 · pandas · NumPy · SciPy · statsmodels · Numba (Hawkes intensity) · scikit-learn · Plotly / Matplotlib / Seaborn · Streamlit
 
 ---
 
-## Technical report
+## Limits (short)
 
-Student research monograph (August 2026): [A Comprehensive Approach to Tail-Risk Estimation via Extreme Value Theory](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf)
+Public retail tickets, 374 calendar days, synthetic delays. GPD and Hawkes are fitted in-sample. Monte Carlo paths are i.i.d.; a Hawkes-driven year remains future work. PSM has no love plot / double robustness. Kalman \(Q,R\) are fixed. One year is too short for coverage tests to have real power.
 
----
-
-## Key Results (Directional)
-
-- **Preventable annual loss** at 95th-percentile SLA: **£77k – £268k**
-- Maintaining **99th-percentile SLA** on high-value orders reduces exposure to near zero.
-- Backtesting shows acceptable violation rates under stated assumptions.
-
-> Full details, limitations, and methodology: [`project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf`](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf). Older five-page summaries remain in `project_report/` for reference.
+Details: [LIMITATIONS.md](LIMITATIONS.md), [INFERENCE.md](INFERENCE.md), and the [monograph](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf).
 
 ---
-
-## Reproducibility
-
-- Primary execution: `python run_src.py`
-- All random seeds and parameters are controlled via `src/config.py`.
-
----
-
-## Technologies
-
-- **Core**: Python ≥ 3.12, pandas, NumPy, SciPy, statsmodels
-- **Advanced**: Custom Hawkes MLE + state-space Kalman (NumPy/Numba), scikit-learn, extreme-value modelling
-- **Visualisation**: Plotly, Matplotlib, Seaborn
-
----
-
-## Limitations & Inference
-
-This is an undergraduate/portfolio project developed using publicly available retail transaction data under real-world constraints. All financial figures presented should therefore be interpreted as directional and illustrative rather than precise operational estimates.
-
-Full technical details, model diagnostics, additional caveats and key inference are documented in LIMITATIONS.md, INFERENCE.md and the research monograph in `project_report/`.
-
----
-
-## License
 
 Apache 2.0
 
----
-
-**Author**: Pranav  
-**Repository**: [github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing](https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing)
-**Kaggle Notebook**: [kaggle.com/prnavjoshi/warehouse-anomaly-detection-stress-testing](https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing)
+**Author:** Pranav  
+**Repo:** [github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing](https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing)  
+**Kaggle:** [prnavjoshi/warehouse-anomaly-detection-stress-testing](https://www.kaggle.com/code/prnavjoshi/warehouse-anomaly-detection-stress-testing)
