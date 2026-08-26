@@ -58,7 +58,7 @@ def run_backtest(
 # HAWKES NEGATIVE LOG-LIKELIHOOD 
         def hawkes_negloglik(params, times):
             mu, alpha, beta = params
-            if mu <= 0 or alpha < 0 or beta <= 0 or beta <= (alpha / beta) >= 1.0:
+            if mu <= 0 or alpha < 0 or beta <= 0 or (alpha / beta) >= 1.0:
                 return np.inf
             N = len(times)
             T = times[-1]
