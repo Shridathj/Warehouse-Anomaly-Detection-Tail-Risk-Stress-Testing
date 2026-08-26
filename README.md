@@ -5,7 +5,7 @@ Pranav · April 2026 (updated August 2026)
 
 Stress-tests **preventable fulfilment loss** on high-value “dragon” orders when warehouse service degrades from a **99th-percentile SLA** to a **95th-percentile / reduced QoS** regime.
 
-The ticket file is the [UCI Online Retail](https://doi.org/10.24432/C5BW33) extract (1 Dec 2010 – 9 Dec 2011). It is treated as a **real retail order book**. It has no pick-complete time, no SLA clock, and no dragon label. Fulfilment delays are therefore **simulated** from log-normals whose means, dispersion and clips are calibrated to public summaries of the **2025 WERC DC Measures** and **CSCMP State of Logistics** reports — an **average-retail** delay regime, not a live WMS extract.
+The ticket file is the [UCI Online Retail](https://doi.org/10.24432/C5BW33) extract (1 Dec 2010 – 9 Dec 2011). It is treated as a **real retail order book**. It has no pick-complete time, no SLA clock, and no dragon label. Fulfilment delays are therefore **simulated** from log-normals whose means, dispersion and clips are calibrated to public summaries of the **2025 WERC DC Measures** and **CSCMP State of Logistics** reports - an **average-retail** delay regime, not a live WMS extract.
 
 Sterling figures are **directional outputs under those assumptions**. They are not operational loss forecasts.
 
