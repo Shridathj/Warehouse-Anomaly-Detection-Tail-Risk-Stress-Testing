@@ -106,6 +106,24 @@ Seeds and SLA / delay / margin parameters live in `src/config.py`. Cloud deploy:
 
 ---
 
+
+## Proposed system design
+
+A theoretical design for an internal batch module sits in [`proposed system design/`](proposed%20system%20design/). It assumes that [LIMITATIONS.md](LIMITATIONS.md) and the nuances named there have already been addressed. It is not an implementation, and it does not turn the recorded pounds into operational forecasts.
+
+The science stays the named functionals. The software around them is specified in six notes.
+
+| Note | Subject |
+|---|---|
+| [01 Quantitative correctness](proposed%20system%20design/01_quantitative_correctness.txt) | Identities, units, edge cases, withholding, golden fixture, reproducibility |
+| [02 Data and persistence contracts](proposed%20system%20design/02_data_and_persistence_contracts.txt) | Immutable runs, versioned policies, publication, artifact hashes, stage states |
+| [03 Asynchronous execution](proposed%20system%20design/03_asynchronous_execution.txt) | API, durable accept, orchestrator, workers, idempotency, retries, isolation |
+| [04 Security and client migration](proposed%20system%20design/04_security_and_client_migration.txt) | Authentication, site scope, database roles, client over the API |
+| [05 Observed-data integration](proposed%20system%20design/05_observed_data_integration.txt) | Warehouse snapshot, certified KPI source, clock, completeness, closed window |
+| [06 Model validation and operational approval](proposed%20system%20design/06_model_validation_and_operational_approval.txt) | History, uncertainty, calibration, sensitivity, approval of intended use |
+
+Gross and netted remain separate. There is no blended total. Observed delays are not filled with the portfolio log-normal. Approval of a loss definition, if it is ever given, is the sixth note, not this repository.
+
 ## Layout
 
 ```
@@ -124,6 +142,7 @@ streamlit_dashboard.py
 project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf
 LIMITATIONS.md
 INFERENCE.md
+proposed system design/   # theoretical; assumes LIMITATIONS.md is addressed
 ```
 
 ---
@@ -135,7 +154,7 @@ Python ≥ 3.12 · pandas · NumPy · SciPy · statsmodels · Numba (Hawkes inte
 ---
 
 
-Details: [LIMITATIONS.md](LIMITATIONS.md), [INFERENCE.md](INFERENCE.md), and the [monograph](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf).
+Details: [LIMITATIONS.md](LIMITATIONS.md), [INFERENCE.md](INFERENCE.md), the [proposed system design](proposed%20system%20design/01_quantitative_correctness.txt), and the [monograph](project_report/A_Comprehensive_Approach_to_Tail_Risk_Estimation_via_EVT.pdf).
 
 ---
 

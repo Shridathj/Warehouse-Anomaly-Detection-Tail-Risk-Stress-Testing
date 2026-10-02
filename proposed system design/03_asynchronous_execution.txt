@@ -1,0 +1,25 @@
+Phase 3. Asynchronous execution
+
+This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. The identities and the mart from the first two phases are taken as given. This note specifies the job around them. A risk user submits a closed window. A worker computes. The application reads the mart. It does not import the engine, and it does not parse stdout.
+
+The shape is a closed window, an idempotency key, an acknowledgement, and a later read. A stream is the wrong door. There is no tick to push, and a long-lived channel pulls the product toward a control tower it is not.
+
+Three processes share one library. The API process imports the contract and the store client. It does not import SciPy, Numba, or Matplotlib. The orchestrator drains an outbox and holds leases. The worker imports the stages. Worker classes are configuration: light, cpu, memory, and numeric. They are not a service per formula. Separate deployables would let E and F be written by different code identities.
+
+One run is two directed graphs if both exposure views are requested. They share the order snapshot and, when present, the KPI snapshot. Functional rows stay keyed by view. The synthetic path skips the KPI snapshot and reconcile, records both as not applicable, and still publishes E. Later stages read artifact hashes. They do not call each other, and they do not redraw an earlier stage. The delay sampler is not on the backtest import graph.
+
+Accept does not see the warehouse. Health of the orchestrator is checked first, with no warehouse query on that hop. If the orchestrator cannot take work, the response is 503 and no row is written. Otherwise one transaction locks the cap, counts queued and running work, and inserts the run with an outbox row, or returns 429 with no row. The acknowledgement is sent only after that commit. A crash between commit and the HTTP write is recovered by replaying the key.
+
+The idempotency key is unique per caller, not globally. Before the hash, site identifiers are sorted and deduplicated, views are ordered gross then netted, and regimes are ordered all, high, degraded. The same caller, the same key, and the same body return the existing run and do not recompute. The same key and a different body conflict. A replay of a failed or blocked run does not start work. A new submission needs a new key.
+
+Unknown fields are rejected, including loss definition and currency. Those belong to the policy. An unknown or inactive policy version is rejected. Whether the window is still open against the KPI high-water mark is a worker check, after acceptance, and blocks with the window not closed.
+
+After acceptance, a neighbour failure does not rewrite a published row. Transient errors are retried three times, with backoff of 2, 8, and 32 seconds plus jitter. A snapshot over the line cap, and a missing core column, are not retried. Truncation is forbidden. The lease is 30 minutes, with a heartbeat each minute. If the heartbeat stops, the orchestrator marks the run failed and lost and releases the cap. The dead worker does not write that status. In-flight work is not resumed.
+
+Blocked and failed are both terminal, and both are ordinary reads. Blocked means the control path finished and publication of that view was refused. Failed means the compute did not finish. Neither writes a zero in place of E. Gross may publish while netted is blocked for a missing cancel ledger.
+
+Monte Carlo fan-out reads the daily dragon-value column, a few hundred rows, not the order lines and not line loss. Parallelism defaults to 4. Path matrices are discarded after the reduce. The snapshot and the propensity fit do not share a memory machine. There is no cancel route. The cap is the back-pressure: two observed runs per site, eight per environment, four synthetic runs in test, and a waiting depth of 32.
+
+The demonstration is synthetic. One submission publishes E. The same key does not recompute. A conflicting body is rejected. A worker killed past the lease is marked lost by the orchestrator. The portfolio entry points remain.
+
+Phase 3 is complete when those cases hold against the Phase 2 schema and the API image still cannot import the numeric stack.

@@ -1,0 +1,33 @@
+Phase 1. Quantitative correctness
+
+This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. The note below is a proposal for the quantitative core of the warehouse tail-risk module. It does not replace the portfolio pipeline, and it does not treat the recorded sterling figures as operational forecasts.
+
+The prior conditions are the ones already named in LIMITATIONS.md. Delays and dragon labels are assigned. The holding charge in the portfolio print is a mislabeled annual rate. Kupiec at zero violations is the chi-square tail, not 1. Independence is unidentified when every window is a hit or every window is a miss. Annualisation uses the inclusive day count. Margin enters the Monte Carlo once. The backtest redraw of the delay sampler is not part of this path. Quantity extremes are a Fréchet diagnosis, not a loss model. The Hawkes fit on the minute clock sits on the alpha wall and does not enter the annual loss. MISC_PATTERN matches no stock code and is not an exclusion list. Those points are taken as settled before the identities below are implemented. The public log may still print the older behaviour; that log is not an acceptance target.
+
+Six functionals answer different questions. They are not refinements of one another, and they are not added.
+
+E is gross margin times unfulfilled dragon value, scaled by annualisation_days / sample_days. The default numerator is 365, including in a leap year. sample_days is the inclusive count of civil dates in the requested window. A date with no lines still counts. A regime filter changes the unfulfilled sum and does not change the denominator. Holding is excluded. The loss definition does not change E.
+
+F is the mean, across a fixed seed list, of the 95 percent expected shortfall of a 365-day year. Each day is an independent log-normal draw of dragon value. The location uses the calendar-day mean, so days with no dragons stay in the denominator. The coefficient of variation uses active days only, sample standard deviation, and is capped at 3. Breach rate and margin are applied once, after the draws. The reduction is a stable sort, the linear percentile, and a sequential float64 sum of the tail. Empty active-day history is a computed zero, not a substituted coefficient of variation of 1.98. A single active day leaves that seed undefined. One failed seed is dropped and the functional is marked degraded. If every seed fails, F is withheld.
+
+H uses the same path equation on the last scored train window, with the active-day mean. It is not the hit-test VaR. If no window scores, H is withheld.
+
+I is the fitted conditional mean of daily line loss above a threshold. The threshold is the linear percentile at the policy quantile, default 0.99. Excesses are strict. The fit is withheld below 50 excesses, on optimiser failure, or if the shape is at least 1. The objective is finite at a zero shape: N log beta plus the sum of excesses over beta. A one-year daily series at the default quantile will not show I. That is intended. The recorded portfolio fit had four excesses on its own loss column. That count is not a property of the new column.
+
+J is the 99th percentile of daily line loss, linear method, times j_day_count. The default is 252. It is a stress exhibit, not an expectation, and it is written whenever the panel exists.
+
+G would be margin times unfulfilled value times the ratio of a projected dragon count to the observed count. The projection in the source uses a fixed process-noise matrix and a clipped monthly rate. No estimator for that noise is specified here. G is not requested. K, a Hawkes-modulated year, is not built. A fit on the alpha bound blocks K only.
+
+The hit test, scored later, sums line loss on a purge window and compares it with an empirical rolling sum of the same column on the train dates. The grid is the civil dates of the request, step 7, purge of 3 dates. It does not redraw delays, and it does not drop a window for having fewer than 50,000 train lines. Kupiec is published, including the zero-hit tail. Independence and conditional coverage are null when unidentified. Conditional coverage is the sum of the likelihood-ratio statistics, on two degrees of freedom.
+
+Unfulfilled, on the synthetic path, is a dragon whose simulated delay meets the sampler cut: 240 minutes gross, 360 minutes netted. Those cuts are lateness on the portfolio sampler. They are not a confirmed threshold on full cycle time. Holding, if the loss definition asks for it, is charged only on unfulfilled lines, and the one-day accrual divides the annual rate by 365. The portfolio identity, with no such division, remains available as holding_day_count = 1.
+
+The synthetic builder calls the existing loader and does not apply an observed exclusion list. The golden comparison is in process, seed 314159, NumPy 2.4.4. E must match g times (365 / sample_days) times U within 1e-6. The rounded headlines 43209 and 9123 are not the comparison. F must match the stored float64 hex under the reduction above. I is not required. G is not requested.
+
+The production seed list is stored, not redrawn:
+
+368516754, 1376328125, 941361253, 1703642766, 474705866, 99717030, 865412934, 1365370853, 1309904236, 682504711, 890338471, 1168074979, 636724087, 297301710, 1504271962, 803153142, 173162324, 1871478035, 1701376669, 1876495696, 221972406, 858842604, 1828217136, 960997093, 1447113416, 341602306, 1767939633, 1137152681, 1069061962, 333559252, 36121028, 807850080
+
+It is the output of Generator(PCG64(20261001)).integers(1, 2**31 - 1, size=32) under NumPy 2.4.4. A new list is a new policy version. The golden path does not use the 32-seed mean.
+
+Phase 1 is complete when a second in-process run reproduces the golden hex, the analytical checks hold, and run_src.py is still the portfolio entry point.

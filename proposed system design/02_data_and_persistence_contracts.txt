@@ -1,0 +1,23 @@
+Phase 2. Data and persistence contracts
+
+This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. Phase 1 is taken as the scientific baseline. This note specifies how a result of that baseline becomes a record: one snapshot, one policy version, one code identity, and insert-only functional rows. The dashboard cache and a regular expression over printed pounds are not the record.
+
+A run binds a policy version. Loss definition, currency, margin, holding, and the seed list live on the policy. They are not fields of the submit body. The policy document is immutable after insert. A later change is a new version. Status moves from draft to active only when three signatures are present, one each from the KPI owner, the commercial owner, and the risk engineer, and the previous active row retires in that same transaction. The bootstrap version pol-2026-10-01 may be inserted with migration signatures. Those signatures are not an approval of the loss definition. Approval is Phase 6.
+
+The first-release document carries the portfolio knobs as defaults, not as settled business choices. Loss definition is preventable revenue. Holding rate is 0.25, divided by 365. Annualisation uses 365 even when the window has 366 civil dates. Margin is 0.30. Report currency is GBP. The stress-day count is 252. Breach minutes are unset, and the confirmation flag is false; the synthetic path still uses 240 and 360 because those are sampler cuts. The dragon rule is service class, with an empty class list. Regime cuts are the levels 0.99 and 0.95, not sample quantiles. Kalman noise is fixed. The seed list is the Phase 1 list.
+
+Four statuses are kept apart. A stage is ok, degraded, blocked, failed, or skipped. A run is queued, running, publishing, published, blocked, or failed. A view is published, blocked, failed, or skipped. A functional is ok, degraded, withheld, not requested, or unidentified. Unidentified belongs on a fit and on a functional. It is not a stage status. Blocked and failed are terminal. A run is not returned to the queue.
+
+Gross and netted are different rows. Regimes are different rows. The key is run, exposure view, functional code, regime, and horizon. Horizons in this release are annual for E, F, G, H, and K, daily for I, and stress_252 for J. There is no total column. A withheld or unrequested value is null, and so is its hex. A computed zero is status ok, value zero, with the hex of that zero. Status ok with a null value is rejected.
+
+Identity text is not null. An ok or degraded row carries the formula. A withheld row carries withheld and the reason. The other statuses carry their own name. A failure before the loss panel writes the terminal run and no functional rows. A control block after the panel exists writes a null row for every requested code.
+
+Publication is one transaction: functional rows, contrasts, KPI display rows, view rows, stage flags, and run status. If it does not commit, nothing from that set is readable. Science values are double precision. The exact payload is the IEEE-754 hex. A numeric column would not round-trip every float64, and the golden comparison would then fail.
+
+Artifacts are addressed by content hash. The hash is the schema and the little-endian column bytes after a stable sort on the primary key. It is not a Parquet footer. The stage input hash includes mode and the site set, so a synthetic artifact cannot satisfy an observed stage. No mart column is named customer_id. Customer identifiers, if the extract contains them, stay in the private order-line object and are dropped before any later artifact.
+
+The dependency lock hash is the SHA-256 of the worker image's canonical requirement list, one name==version line, sorted, with a final newline. It is not the image digest and it is not the seed-list hash. The image digest is written by the worker before publication. It is null while the run is queued.
+
+Retention is part of the contract even though the worker arrives later. Order-line objects expire at 90 days, path samples at 7, aggregates at one year, unless a legal schedule replaces those numbers. Expiry writes an audit row in the same transaction as the delete. After the lines are gone, the run still resolves the hashes, the policy version, and the two code identities. A rebuild is a new run.
+
+Phase 2 is complete when a failed publication leaves no functional visible, a withheld I is a null row, G is stored as not requested, and the Phase 1 golden hex can be inserted and read back unchanged.

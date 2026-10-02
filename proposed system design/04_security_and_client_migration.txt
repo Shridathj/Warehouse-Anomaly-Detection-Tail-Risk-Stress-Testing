@@ -1,0 +1,21 @@
+Phase 4. Security and client migration
+
+This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. Phases 2 and 3 already give an insert-only record and a job. This note specifies who may submit, who may read, and how the human door leaves the engine. The portfolio Streamlit process may keep running. It is not the production orchestrator, and a regular expression over its stdout is not the contract.
+
+Evaluation order is fixed. A missing or invalid token is 401. A site or run outside the caller's set is 404. A role failure, only after the resource is known to be in scope, is 403. Reversing the last two steps would make a refusal an oracle for the site. A run is in scope only when its site set is a subset of the caller's set.
+
+The token is a JWT. Issuer and audience are configured. The algorithm none is rejected. Expiry and not-before are checked with 60 seconds of skew. Site scope is the string-array claim site_ids, unless the policy names another claim. That name has not been checked against a live identity provider. The check belongs with the observed port, not with a guess in this note.
+
+A risk user may submit and read observed runs for sites in the claim, and may not read a synthetic production run, order lines, or another site. A KPI owner signs KPI fields and reads reconcile detail. A commercial owner signs the loss definition, margin, holding, currency, stress-day count, breach confirmation, and the dragon rule. A risk engineer signs the seed list, the threshold quantile, and the noise setting, and may read traces outside production. An auditor reads hashes, policy version, and status, and does not submit. Two service identities exist. The worker inserts publication rows and updates a leased run. The orchestrator drains the outbox and is the only writer of a lost-worker status.
+
+Grants match those identities. The API writer inserts runs, outbox rows, and policy drafts, and may change policy status only in the activation transaction. It does not update a functional, and it does not update the policy document. The publisher inserts functional, contrast, view, stage, and artifact rows, and does not update them. Retention deletes expired rows and inserts the audit row in one transaction. A correction is a new run.
+
+The network is private. The API is not on the public internet. Workers, the object store, and the mart sit in the same region as the replica they will later read. The order-line prefix has no public read and no presigned URL. The API has no signer for that prefix. A test that any handler returns such a URL fails the build.
+
+Customer identifiers do not leave the order snapshot. Names, addresses, and free text are not in the ingest allow-list. Country may remain inside the contrast fit. It is forbidden in logs, and a per-country row is omitted when either side of that country has fewer than 50 lines. The residual in worker memory is accepted and stated. Audit records the actor, the run, and the result. It does not record a line.
+
+The production client is a new module. It calls the API and renders identity strings, contrasts on their own view, and a block reason as a reason. It does not import the portfolio metrics parser, the pipeline, or the source tree, and it does not edit the existing dashboard entry point. Community-cloud deployment remains a note on the portfolio path. It is not the production deploy.
+
+The warehouse credential, when it exists, sits on the ingest worker only. If the replica cannot filter to the run's sites, that gap is recorded in Phase 5. It is not closed by a comment, and it is not solved by placing the credential on the API.
+
+Phase 4 is complete when the status order is tested, a risk-user token cannot read a synthetic production run, an update of a functional is rejected by grant, and the new client can show a synthetic E without importing the engine.

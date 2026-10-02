@@ -59,3 +59,19 @@ A production pass would need a seed ensemble, purged refits, and a Hawkes-modula
 What this does not show
 
 The stack can be derived and wired, with every headline a named functional. It does not show a validated operational model, a real SLA effect, or a policy to hold 99th-percentile service on dragons. Those need observed delays, more data, and more compute. There is still a lot to learn.
+
+
+Proposed system design
+
+A proposed system design for this risk module sits in `proposed system design/`. It is theoretical. It assumes that this note, and the nuances named in it, have already been addressed: assigned delays, the mislabeled holding charge, Kupiec at zero violations, unidentified independence at the boundary, the inclusive day count, a single factor of margin, the backtest redraw, the collapsed Hawkes clock, and the stock-code pattern that matches nothing. The proposal does not close those items, and it does not replace the portfolio pipeline.
+
+The design is six notes.
+
+1. Quantitative correctness. Functional identities, units, withholding, a golden synthetic fixture, and reproducibility.
+2. Data and persistence contracts. Immutable run metadata, versioned policies, identity strings, transactional publication, and artifact hashes.
+3. Asynchronous execution. The API, durable acceptance, the orchestrator, workers, idempotency, retries, and lease recovery.
+4. Security and client migration. Authentication, site scope, database roles, and a client that reads the mart rather than running the model.
+5. Observed-data integration. A warehouse snapshot and a certified KPI source, with the clock, completeness, permissions, and closed-window checks before any observed publication.
+6. Model validation and operational approval. Operational history, uncertainty, calibration, sensitivity, and a signed pack for the loss definition and the intended use. A refusal is a finished outcome.
+
+Sterling figures in this file remain the portfolio record. They are not acceptance thresholds for the proposal.

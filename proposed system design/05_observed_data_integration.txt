@@ -1,0 +1,31 @@
+Phase 5. Observed-data integration
+
+This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. The synthetic path already publishes under a site-scoped identity. This note is the first reading of a warehouse snapshot and a certified KPI table. An observed run is not published until the clock, the completeness checks, the read permissions, and the closed-window rule have been exercised. A block on that path is a finished control, not a filled delay.
+
+The UCI extract has no pick-complete time, no promise clock, and no dragon flag. That is why the observed path does not sample a log-normal when the clock is missing. The portfolio sampler remains on the synthetic path and is labelled as such.
+
+The replica, the certified KPI table, the identity claim, and the backup tool are not in this repository. Adapter fakes are enough to test the ports. They are not the checklist for a first observed run.
+
+The order read asks for a repeatable snapshot, restricted to the run's sites and the civil-date window. Required columns are site, line identity, parent line, stock code, business date, event time, signed quantity, unit price, currency, service class, and cycle time in minutes. Headers are the clock-pair events, the site timezone, the cycle-time definition, and a completion flag. The flag is true only when the returned count equals the warehouse count and the extract is not truncated. A missing core column fails and is not retried. A false completion flag fails the run. The line cap warns at five million and fails closed at twenty million. The first site's annual count is compared with that cap before any observed publication. The UCI file does not exercise it.
+
+Cycle time is full elapsed time on the KPI clock pair. It is not lateness past a promise. The portfolio breach cuts of 240 and 360 minutes were cuts on simulated lateness. Used unchanged on full cycle time they would mark almost every dragon unfulfilled. An observed run therefore blocks until the policy records that the breach minutes have been confirmed for full cycle time. Null, negative, or non-finite cycle time is unusable. It counts against the coverage floor. It is not imputed.
+
+Gross keeps positive quantity, positive price, and stock codes outside an explicit exclusion table. The brittle portfolio pattern is not that table. Netted requires a parent on cancellation rows. If every negative row has a null parent, that view blocks. Gross still runs. There is no fall-back to a year-long customer-and-SKU max-pick. Net quantity is the signed sum on site and parent line. The price, stock code, service class, currency, and cycle time come from the positive original row. A group with no original row is dropped and counted unmatched.
+
+A reversal flag counts opposite-signed pairs on the same site and stock code within the policy window, default 30 minutes. It is a quality count, not a second netting rule. Thirty minutes is not a measurement from the file. The short paper-craft reversal is an example.
+
+Release 1 is single currency. Other currencies are counted and dropped, not converted. If the kept share is below 0.98, the view blocks. That floor is separate from cycle-time coverage.
+
+The dragon rule is service class. An empty class list blocks the observed run. It does not fall back to value-biased sampling. A later value threshold marks the contrast mechanical.
+
+Regime is an attainment level on the site-day: high at or above 0.99, degraded at or below 0.95, otherwise unlabelled. These are not sample quantiles. A site that runs between the two cuts has empty high and degraded slices for the year, and the all-days figure is not their sum. The cuts are confirmed before a user is shown those cards.
+
+Reconcile compares a reconstructable cycle-time percentile with the published figure. The tolerance is the maximum of two minutes and five percent of the published value, not both at once. A 10-minute miss on a published 200-minute percentile passes. Attainment uses an absolute tolerance of 0.01. Coverage requires 0.98 of in-scope lines to have a usable cycle time, and 0.98 of the civil dates to appear on the KPI snapshot. Inventory accuracy is displayed, not recomputed, unless the catalog says it can be rebuilt. This module does not own the definitions.
+
+The window is closed only if its end is on or before the last certified KPI business date. Otherwise the worker blocks. That check is not an accept-time check. The API still cannot see the KPI plane.
+
+The worker reads through a read-only role, filtered to the run's sites, and never writes the order plane or the KPI plane. If the replica cannot enforce the filter, the port records a client-side filter and the first observed run is not treated as done while that gap is unstated.
+
+The checklist before publication is a line count against the cap, a clock pair, a timezone, a non-empty service class or an explicit waiver, confirmed breach minutes, regime cuts, and a staging run that returns F, H, J, the contrasts, and G as not requested. The in-process golden is not that run. Adapters may be deployed dark and expected to block. After go-live, a block rate above half of terminal runs, on at least five runs in a day, is an operational signal. It is off during the dark launch.
+
+Phase 5 is complete when a missing clock blocks without a fabricated delay, a missing cancel ledger blocks netted only, an open window blocks, and no observed functional has been published without the checklist.
