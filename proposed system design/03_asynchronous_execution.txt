@@ -1,25 +1,144 @@
-Phase 3. Asynchronous execution
+Warehouse Tail-Risk Production System
+Phase 3 — Asynchronous execution
 
-This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. The identities and the mart from the first two phases are taken as given. This note specifies the job around them. A risk user submits a closed window. A worker computes. The application reads the mart. It does not import the engine, and it does not parse stdout.
+| Field | Value |
+|---|---|
+| Document | Phase 3 of the theoretical production specification |
+| Date | 2026-10-02 |
+| Status | Theoretical design |
+| Repository | https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing |
+| Audience | Engineers implementing the API, orchestrator, and workers |
+| Depends on | Phase 1 pure functions and Phase 2 mart |
+| Blocks | Phases 4 through 6 |
 
-The shape is a closed window, an idempotency key, an acknowledgement, and a later read. A stream is the wrong door. There is no tick to push, and a long-lived channel pulls the product toward a control tower it is not.
+Narration
 
-Three processes share one library. The API process imports the contract and the store client. It does not import SciPy, Numba, or Matplotlib. The orchestrator drains an outbox and holds leases. The worker imports the stages. Worker classes are configuration: light, cpu, memory, and numeric. They are not a service per formula. Separate deployables would let E and F be written by different code identities.
+This is a theoretical design. It assumes that LIMITATIONS.md and the source nuances listed in Phase 1 have already been addressed, and that Phase 2 is the system of record. Phase 3 places that record behind a durable job. The API accepts a closed window. Workers compute. The app does not import the engine and does not parse stdout.
 
-One run is two directed graphs if both exposure views are requested. They share the order snapshot and, when present, the KPI snapshot. Functional rows stay keyed by view. The synthetic path skips the KPI snapshot and reconcile, records both as not applicable, and still publishes E. Later stages read artifact hashes. They do not call each other, and they do not redraw an earlier stage. The delay sampler is not on the backtest import graph.
+The work is a closed window. The client needs idempotent submit and a later read. A streaming door is rejected because it invites a control tower this system is not.
 
-Accept does not see the warehouse. Health of the orchestrator is checked first, with no warehouse query on that hop. If the orchestrator cannot take work, the response is 503 and no row is written. Otherwise one transaction locks the cap, counts queued and running work, and inserts the run with an outbox row, or returns 429 with no row. The acknowledgement is sent only after that commit. A crash between commit and the HTTP write is recovered by replaying the key.
+Assumptions taken as already addressed
 
-The idempotency key is unique per caller, not globally. Before the hash, site identifiers are sorted and deduplicated, views are ordered gross then netted, and regimes are ordered all, high, degraded. The same caller, the same key, and the same body return the existing run and do not recompute. The same key and a different body conflict. A replay of a failed or blocked run does not start work. A new submission needs a new key.
+Functional identities, withholding, and the golden fixture exist. Publication is one transaction. Policies are versioned. Artifact hashes do not depend on file footers. G is not_requested. The portfolio backtest does not redraw delays. One seed is no longer presented as a sampling design: the 32-seed list exists, and the golden path remains the single seed 314159.
 
-Unknown fields are rejected, including loss definition and currency. Those belong to the policy. An unknown or inactive policy version is rejected. Whether the window is still open against the KPI high-water mark is a worker check, after acceptance, and blocks with the window not closed.
+Scope
 
-After acceptance, a neighbour failure does not rewrite a published row. Transient errors are retried three times, with backoff of 2, 8, and 32 seconds plus jitter. A snapshot over the line cap, and a missing core column, are not retried. Truncation is forbidden. The lease is 30 minutes, with a heartbeat each minute. If the heartbeat stops, the orchestrator marks the run failed and lost and releases the cap. The dead worker does not write that status. In-flight work is not resumed.
+In scope: the HTTP API, durable accept, the outbox, the orchestrator, worker classes, idempotency, retries, lease expiry, and resource isolation. Synthetic runs are the demonstration path.
 
-Blocked and failed are both terminal, and both are ordinary reads. Blocked means the control path finished and publication of that view was refused. Failed means the compute did not finish. Neither writes a zero in place of E. Gross may publish while netted is blocked for a missing cancel ledger.
+Out of scope: production SSO enforcement beyond the interface, database grant deployment, the Streamlit cutover, and a live warehouse. Those are Phases 4 and 5. The API image still must not import scipy, numba, or matplotlib, so the boundary is built here.
 
-Monte Carlo fan-out reads the daily dragon-value column, a few hundred rows, not the order lines and not line loss. Parallelism defaults to 4. Path matrices are discarded after the reduce. The snapshot and the propensity fit do not share a memory machine. There is no cancel route. The cap is the back-pressure: two observed runs per site, eight per environment, four synthetic runs in test, and a waiting depth of 32.
+Package and processes
 
-The demonstration is synthetic. One submission publishes E. The same key does not recompute. A conflicting body is rejected. A worker killed past the lease is marked lost by the orchestrator. The portfolio entry points remain.
+One library, three processes. api, orchestrator, and worker share risk_core. Worker resource classes are configuration. They are not one microservice per stage. Ten deployables would let E be computed by a different SHA than F, which breaks the rule that one run has one code SHA.
 
-Phase 3 is complete when those cases hold against the Phase 2 schema and the API image still cannot import the numeric stack.
+    risk_core/contract     policy, errors, functional codes, stage types
+    risk_core/compute      loss, monte_carlo, hawkes, gpd, coverage, causal
+    risk_core/stages       S0 through S12
+    risk_core/assemble     row set, no total
+    risk_core/store        mart and object-store adapters
+    risk_core/api          HTTP process
+    risk_core/orchestrator lease and outbox drain
+    risk_core/worker       stage runner
+
+The API image is pip install .[api] and fails the build if scipy, numba, or matplotlib import. The worker image is pip install .[worker] and fails unless scipy and numba import. The orchestrator image is pip install . and follows the API import ban. requirements.txt remains the portfolio install path and is not stripped. run_src.py still runs.
+
+Stage graph
+
+One DAG per exposure view. Both views share the order snapshot and, when present, the KPI snapshot. A request for both views is one run_id and two DAGs.
+
+    S0 snapshot_orders -> S2 build_exposure -> S3 service_outcome -> S4 reconcile -> S5 loss_identity
+    S1 snapshot_kpis -> S4
+    S5 -> S6 diagnostics (optional)
+    S5 -> S7 monte_carlo
+    S5 -> S8 causal
+    S5 -> S9 hawkes
+    S5 -> S10 backtest
+    S6, S7, S8, S9, S10 -> S11 assemble -> S12 publish
+
+S7 through S10 read artifacts only. They do not call each other and do not redraw an earlier stage. S1 and S4 are skipped, with reconcile_status and coverage_status = not_applicable, when mode = synthetic. E still publishes on that path.
+
+Resource classes. The scheduler does not place S0 and S8 on the same machine.
+
+| Stage | Class | Size |
+|---|---|---|
+| S0 snapshot | memory | 64 GB |
+| S1, S2, S3, S4, S5, S11, S12, retention | light | 2 GB |
+| S6, S7, S10 | cpu | 8 GB |
+| S8 causal | memory | 64 GB, one PSM or QR fit |
+| S9 Hawkes and Kalman | numeric | 16 GB |
+
+There is no cancel route. A slot is held until the run is terminal. The cap is the only back-pressure.
+
+Durable accept
+
+The API cannot see the warehouse or the KPI plane, so it does not return WAREHOUSE_UNAVAILABLE and it does not decide whether the window is closed. Those checks run in the worker after accept.
+
+Order of accept:
+
+1. Authenticate and authorise. Phase 4 specifies the token rules. Until that phase, a test token is enough, but the status codes below are already the contract.
+2. Reject a body that is not JSON, has duplicate object keys, has an unknown field, or lacks the Idempotency-Key header. 400. loss_definition and currency in the body are unknown fields.
+3. Reject an unknown, inactive, or inverted policy window. 422.
+4. Ask the orchestrator for health. This hop carries no warehouse query. If it cannot accept work, 503 RUNNER_UNAVAILABLE and no row.
+5. In one mart transaction, lock the per-site and per-environment cap rows, count queued and running rows, and either insert the run plus an outbox row or return 429. The cap and the insert cannot pass both of two concurrent accepts.
+6. Commit. Only then return 202. A crash after commit and before the HTTP write is recovered by replaying the same key.
+
+Idempotency. Uniqueness is (subject, idempotency_key), not the key alone. Before hashing, site_ids becomes the sorted unique list, exposure_views is rewritten gross then netted, regimes is rewritten all, high, degraded, object keys are sorted, separators are compact, and the encoding is UTF-8. request_hash is the SHA-256 of that canonical body. Money is not submitted.
+
+| Presented key | Result |
+|---|---|
+| New key, checks pass | 202 and run_id after commit |
+| Same subject, same key, same hash | 202, same run_id, current status, no recompute |
+| Same subject, same key, different hash | 409 IDEMPOTENCY_CONFLICT |
+| Cap exhausted inside the insert | 429 RUN_CAPACITY, no row |
+| Mart cannot commit | 503 MART_UNAVAILABLE, no row |
+
+A replay of a failed, blocked, or WORKER_LOST run does not recompute. Resubmit uses a new Idempotency-Key.
+
+Body, first release:
+
+    {
+      "site_ids": ["SITE-A"],
+      "window": {"business_date_start": "2025-01-01", "business_date_end": "2025-12-31"},
+      "exposure_views": ["gross", "netted"],
+      "mode": "observed",
+      "policy_version": "pol-2026-10-01",
+      "regimes": ["all", "high", "degraded"],
+      "stages": {"diagnostics": false, "causal": true, "hawkes": true, "backtest": true}
+    }
+
+Whether the window is still open against the KPI high-water mark is not an accept check. The worker blocks that case with WINDOW_NOT_CLOSED after 202.
+
+GET routes return status, traceability (both snapshot hashes, policy version, worker code_sha, api_digest, lock_hash, seed-list hash), per-view reconcile and coverage, hit-test fields under the hit_ names, functionals with value and value_hex, contrasts, series at business_date grain, and KPI display rows. An empty list is 200 and []. A series request whose grain would exceed 2000 points is 422 SERIES_TOO_FINE. The API does not drop points and does not return order lines.
+
+Accept latency target, checks only: p99 under 300 ms inside the region. Series read p99 under 500 ms at 2000 points. The publication transaction is dozens of rows, p99 under 2 seconds. Snapshot duration is not part of the 202 latency.
+
+Failure after accept
+
+Retry budget, defaults in deploy config: 3 attempts, backoff 2 seconds, 8 seconds, then 32 seconds, with jitter. Transient: connection reset, timeout, HTTP 503 from a neighbour, database deadlock. Not transient, and not retried: SNAPSHOT_TOO_LARGE, CORE_COLUMN_MISSING, HTTP 4xx from the warehouse, schema mismatch.
+
+Worker lease TTL defaults to 30 minutes, heartbeat every 60 seconds. No heartbeat until the TTL expires: the orchestrator sets the run to failed with WORKER_LOST and releases the cap. The worker process does not make that write. In-flight work is not resumed.
+
+| Failure after accept | Behaviour |
+|---|---|
+| Warehouse unreachable during snapshot | Retry if transient, then failed WAREHOUSE_UNAVAILABLE. Not a 503 on the original POST. |
+| Window end after the last certified KPI business date | blocked WINDOW_NOT_CLOSED. Control path. |
+| Snapshot larger than the cap | failed SNAPSHOT_TOO_LARGE. Not retried. Truncation is forbidden. |
+| Required core column absent | failed CORE_COLUMN_MISSING. Not retried. |
+| Object store unavailable | Retry if transient, then failed ARTIFACT_STORE_UNAVAILABLE. Do not publish a partial set. |
+| Mart unavailable at publish | Retry the publication transaction, then failed MART_UNAVAILABLE. No functional is visible unless the transaction committed. |
+| Lease expires | Orchestrator sets failed WORKER_LOST. |
+| Restore under an in-flight run | failed RESTORE_RESUBMIT. |
+
+blocked and failed are both terminal and are returned by GET as 200 with a status field. They are not HTTP 500. blocked means the control path finished. failed means the system could not compute. Neither writes a zero in place of E.
+
+Fan-out. Monte Carlo workers read dragon_value from the daily panel, not line_loss, and not the order-line extract. mc_parallelism defaults to 4. One CvUndefined or failed seed degrades F and is dropped from the mean. If every seed fails or is undefined, F is withheld. Path matrices are discarded after the reduce. A debug policy may keep a 1 percent sample for 7 days. The API does not return paths.
+
+Capacity: 2 concurrent observed runs per site, 8 per environment, 4 concurrent synthetic runs in test, waiting depth 32 before 429. Two concurrent accepts cannot both observe one free slot.
+
+Demonstration
+
+Phase 3 is demonstrated on the synthetic path. One synthetic POST publishes E inside the mart, with reconcile and coverage not_applicable. A second POST with the same key and body returns the same run_id and does not recompute. A second POST with the same key and a different canonical body returns 409. A killed worker past the lease becomes WORKER_LOST, written by the orchestrator. SNAPSHOT_TOO_LARGE is not retried. One failed Monte Carlo seed degrades F. S0 and S8 are not scheduled on the same machine. The API process import graph does not include scipy, numba, or matplotlib.
+
+Exit criteria
+
+Phase 3 is done when those demonstrations pass against the Phase 2 schema, the 32-seed path can publish F, and the portfolio entry points still run. Production identity and the client cutover are not done in this phase.
