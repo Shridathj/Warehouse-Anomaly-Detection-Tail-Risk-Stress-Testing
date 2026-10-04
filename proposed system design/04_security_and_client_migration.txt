@@ -1,21 +1,99 @@
-Phase 4. Security and client migration
+Warehouse Tail-Risk Production System
+Phase 4 — Security and client migration
 
-This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. Phases 2 and 3 already give an insert-only record and a job. This note specifies who may submit, who may read, and how the human door leaves the engine. The portfolio Streamlit process may keep running. It is not the production orchestrator, and a regular expression over its stdout is not the contract.
+| Field | Value |
+|---|---|
+| Document | Phase 4 of the theoretical production specification |
+| Date | 2026-10-02 |
+| Status | Theoretical design |
+| Repository | https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing |
+| Audience | Engineers implementing authorisation, grants, and the client cutover |
+| Depends on | Phase 3 API and worker processes |
+| Blocks | Phases 5 and 6 |
 
-Evaluation order is fixed. A missing or invalid token is 401. A site or run outside the caller's set is 404. A role failure, only after the resource is known to be in scope, is 403. Reversing the last two steps would make a refusal an oracle for the site. A run is in scope only when its site set is a subset of the caller's set.
+Narration
 
-The token is a JWT. Issuer and audience are configured. The algorithm none is rejected. Expiry and not-before are checked with 60 seconds of skew. Site scope is the string-array claim site_ids, unless the policy names another claim. That name has not been checked against a live identity provider. The check belongs with the observed port, not with a guess in this note.
+This is a theoretical design. It assumes that LIMITATIONS.md and the source nuances listed in Phase 1 have already been addressed, and that Phases 2 and 3 already publish immutable rows. Phase 4 decides who may submit and who may read, and it moves the human door off the engine. The Streamlit process stops being the orchestrator. It becomes a client of the REST API.
 
-A risk user may submit and read observed runs for sites in the claim, and may not read a synthetic production run, order lines, or another site. A KPI owner signs KPI fields and reads reconcile detail. A commercial owner signs the loss definition, margin, holding, currency, stress-day count, breach confirmation, and the dragon rule. A risk engineer signs the seed list, the threshold quantile, and the noise setting, and may read traces outside production. An auditor reads hashes, policy version, and status, and does not submit. Two service identities exist. The worker inserts publication rows and updates a leased run. The orchestrator drains the outbox and is the only writer of a lost-worker status.
+dashboard/metrics.py parsing pounds out of stdout is assumed retired on the production path. The portfolio command streamlit run streamlit_dashboard.py may keep working as a historical entry point. It is not the production client.
 
-Grants match those identities. The API writer inserts runs, outbox rows, and policy drafts, and may change policy status only in the activation transaction. It does not update a functional, and it does not update the policy document. The publisher inserts functional, contrast, view, stage, and artifact rows, and does not update them. Retention deletes expired rows and inserts the audit row in one transaction. A correction is a new run.
+Assumptions taken as already addressed
 
-The network is private. The API is not on the public internet. Workers, the object store, and the mart sit in the same region as the replica they will later read. The order-line prefix has no public read and no presigned URL. The API has no signer for that prefix. A test that any handler returns such a URL fails the build.
+Customer identifiers are already dropped before feature matrices in the Phase 1 and Phase 3 artifact rules. The mart already has no customer_id column. Functional rows are already insert-only at the application layer. This phase makes that rule a database grant. The API already has idempotency and a private-network assumption. This phase adds the token and the role checks that the accept path reserved.
 
-Customer identifiers do not leave the order snapshot. Names, addresses, and free text are not in the ingest allow-list. Country may remain inside the contrast fit. It is forbidden in logs, and a per-country row is omitted when either side of that country has fewer than 50 lines. The residual in worker memory is accepted and stated. Audit records the actor, the run, and the result. It does not record a line.
+Scope
 
-The production client is a new module. It calls the API and renders identity strings, contrasts on their own view, and a block reason as a reason. It does not import the portfolio metrics parser, the pipeline, or the source tree, and it does not edit the existing dashboard entry point. Community-cloud deployment remains a note on the portfolio path. It is not the production deploy.
+In scope: OIDC validation, site-level authorisation, database roles, the private bucket policy, retention execution, and a Streamlit client that reads through the API.
 
-The warehouse credential, when it exists, sits on the ingest worker only. If the replica cannot filter to the run's sites, that gap is recorded in Phase 5. It is not closed by a comment, and it is not solved by placing the credential on the API.
+Out of scope: a live warehouse credential in production use, observed publication, and model approval. The warehouse port is specified only far enough that its credential cannot sit on the API. Connecting it is Phase 5.
 
-Phase 4 is complete when the status order is tested, a risk-user token cannot read a synthetic production run, an update of a functional is rejected by grant, and the new client can show a synthetic E without importing the engine.
+Identity and authorisation
+
+Evaluation order, and no other order: missing or invalid token is 401; then the site subset check is 404; then the role check is 403. A 403 is returned only after the resource is known to be in scope. Reversing the last two steps would make a 403 an oracle that the site is in the caller's set. A run with sites S is in scope only when S is a subset of the caller's set.
+
+OIDC checks, which two implementations must not invent differently: the token is a JWT; iss equals the configured issuer; aud contains the configured audience; the signature algorithm is the identity provider's advertised algorithm and none is rejected; exp is in the future and nbf is not in the future, with 60 seconds of skew. Site scope is the string array claim site_ids. A deployment may also accept group names with the prefix site: if policy.oidc_site_claim says so. The default claim name is site_ids. This claim name is not assumed verified against a live identity provider. Phase 5 records that check.
+
+code_sha on a run is the worker image digest, because the worker writes numbers. api_digest is stored beside it. Rolling back the API image does not rewrite code_sha on rows already published. Rolling back the worker image is the rollback that changes which code will write the next run.
+
+| Role | May | May not |
+|---|---|---|
+| Risk user | POST /runs for sites in the claim. GET functionals, series, KPIs, contrasts, and the site-scoped run list for in-scope observed runs. | Read mode = synthetic in production. Read order lines. Sign a policy. Update a functional. See another site's run (404). |
+| KPI owner | POST policies and sign KPI-owned fields. Read reconcile detail for in-scope runs. | Mutate a published functional. Sign a commercial-owned or risk-owned field. Edit the KPI plane through this API. |
+| Commercial owner | Sign commercial-owned fields: loss definition, margin, holding, annualisation_days, currency, j_day_count, fx_keep_floor, breach minutes and confirmation, dragon rule and classes, value_threshold, reversal window. | Sign a KPI-owned or risk-owned field. Mutate a published functional. |
+| Risk engineer | Sign risk-owned fields: gpd_threshold_quantile, kalman_noise, oidc_site_claim, seed_list. Read withheld reasons, stage errors, and traces in dev and test. Submit synthetic runs in dev and test. Read artifact hashes. | Obtain a signed URL for order-line Parquet. Use a production token to read line values. Change a published functional. Sign a field the role does not own. |
+| Auditor | GET the audit record and the traceability fields. | POST /runs. Read line values or customer_id. |
+| Service account | Worker inserts publication rows and updates a leased run. Orchestrator drains the outbox and sets WORKER_LOST on lease expiry. | Be presented as a browser token. Read warehouse rows outside the run's site_ids. UPDATE a functional value. The dead worker does not record its own WORKER_LOST. |
+
+mode = synthetic in production is evaluated only after the site subset check: 404 when a site is outside the claim, then 403 for the risk-user role.
+
+Database roles
+
+| Role | Grant |
+|---|---|
+| api_writer | INSERT on run, outbox, policy drafts, and policy_signature. UPDATE of policy.status only, in the activation transaction. No UPDATE of policy.document. No UPDATE on run after insert. No UPDATE on functional. |
+| run_transition | The leased worker. UPDATE on run status, reason, snapshot columns, finished_at, code_sha, and api_digest only. Does not set WORKER_LOST. No UPDATE of outbox. No UPDATE and no DELETE on functional or contrast. |
+| orchestrator | UPDATE of outbox.drained_at. UPDATE of run status, reason, and finished_at only for the lease-expiry transition to failed / WORKER_LOST. No other run columns. No INSERT of functionals. |
+| publisher | INSERT on functional, contrast, kpi_display, stage_run, view_result, and artifact. No UPDATE. |
+| retention | DELETE expired artifact rows and expired aggregate rows, and INSERT on audit, in one transaction. |
+
+The API process uses api_writer. The worker uses run_transition and publisher. The orchestrator process uses orchestrator.
+
+Network and object store
+
+Private network only. The API is not reachable from the public internet. Workers, the object store, and the risk mart are in the same region as the warehouse read replica they will later be allowed to use. Egress from workers is limited to the warehouse endpoint, the KPI endpoint, the mart, the object store, and the queue. No general internet egress in production.
+
+The order-line prefix has no public ACL and no presign. The API has no signer for that prefix. A test asserts that no endpoint returns a URL. A static test rejects Principal "*" and rejects presign on the order-line prefix.
+
+Customer id never leaves the order snapshot. It is dropped before feature matrices. Names, addresses, and free text are not in the allow-list and are dropped at ingest. Country may be used inside the causal worker. It is forbidden in logs. The contrast response does not include a per-country table when the smaller of the treated and control counts in that country is below 50. That residual in worker memory is accepted and written here so it is not silent.
+
+Audit every POST and every GET that returns a run, with actor, run_id, and result. Do not audit the body of an order line. The log schema allows run_id, stage, status, and counts. It forbids customer_id, country, and line values. A test scans handlers and formatters.
+
+Retention worker deletes by expires_at and writes the audit row in the same transaction. If it fails, objects live longer; they are not more visible. Tombstones are written so a later restore cannot treat an expired object as live.
+
+Client migration
+
+The new client is a module that calls the REST API. It does not import dashboard.metrics, dashboard.pipeline, or src. It does not edit streamlit_dashboard.py. streamlit run streamlit_dashboard.py and python run_src.py keep working for the portfolio path.
+
+The production client renders functionals with identity strings, contrasts on a separate view, hit-test fields under the hit_ names rather than as S4 coverage, and a blocked run as a reason. It does not sum E through J. It does not scrape stdout. DEPLOYMENT.md gains one line that community cloud is not the production deploy. The community-cloud procedure may remain as a historical note until the team deletes it.
+
+The client is deployed only after Phases 2 and 3 publish E and F, the grant script has been applied, and a synthetic POST through the API is readable by a risk-user token and not readable as a synthetic run by that role in the production profile. Observed rows are still not the success condition of this phase.
+
+Threats this phase closes
+
+| Threat | Mitigation |
+|---|---|
+| Warehouse credential in the API or the app | Credential exists only on the ingest worker. The API process has no warehouse credential and no KPI credential. |
+| Order-line object leaked by a signed URL | API has no signer for that prefix. Bucket policy denies presign and public read. |
+| Customer identifier in a model, a log, or a response | Dropped before feature matrices. Log and response tests. |
+| Cross-site read | Subset check, 404 on failure. |
+| Risk user reads a synthetic production run | API filter on role and mode, after the site check. |
+| Functional value edited in place | Insert-only grant. Correction is a new run. |
+| Idempotency key replayed with a different window | 409, already implemented in Phase 3 and left unchanged. |
+| Secret in the image | CI secret scan on every main merge. |
+| Backup restores expired lines | Tombstone written here, applied on restore in the drill. |
+
+A stolen worker credential that can read every site is not closed by this phase if the replica cannot filter to run.site_ids. Phase 5 records that gap. The credential still does not sit on the API.
+
+Exit criteria
+
+Phase 4 is done when the evaluation order is tested (401, then 404, then 403), a risk-user token cannot read a synthetic production run, grants reject an UPDATE of a functional, no endpoint returns an order-line URL, the new client renders a synthetic E with its identity string and does not import the engine, and the portfolio Streamlit entry point still starts.
