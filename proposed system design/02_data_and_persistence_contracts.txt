@@ -1,23 +1,229 @@
-Phase 2. Data and persistence contracts
+Warehouse Tail-Risk Production System
+Phase 2 — Data and persistence contracts
 
-This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. Phase 1 is taken as the scientific baseline. This note specifies how a result of that baseline becomes a record: one snapshot, one policy version, one code identity, and insert-only functional rows. The dashboard cache and a regular expression over printed pounds are not the record.
+| Field | Value |
+|---|---|
+| Document | Phase 2 of the theoretical production specification |
+| Date | 2026-10-02 |
+| Status | Theoretical design |
+| Repository | https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing |
+| Audience | Engineers implementing the risk mart and artifact store |
+| Depends on | Phase 1 identities, statuses, and withholding rules |
+| Blocks | Phases 3 through 6 |
 
-A run binds a policy version. Loss definition, currency, margin, holding, and the seed list live on the policy. They are not fields of the submit body. The policy document is immutable after insert. A later change is a new version. Status moves from draft to active only when three signatures are present, one each from the KPI owner, the commercial owner, and the risk engineer, and the previous active row retires in that same transaction. The bootstrap version pol-2026-10-01 may be inserted with migration signatures. Those signatures are not an approval of the loss definition. Approval is Phase 6.
+Narration
 
-The first-release document carries the portfolio knobs as defaults, not as settled business choices. Loss definition is preventable revenue. Holding rate is 0.25, divided by 365. Annualisation uses 365 even when the window has 366 civil dates. Margin is 0.30. Report currency is GBP. The stress-day count is 252. Breach minutes are unset, and the confirmation flag is false; the synthetic path still uses 240 and 360 because those are sampler cuts. The dragon rule is service class, with an empty class list. Regime cuts are the levels 0.99 and 0.95, not sample quantiles. Kalman noise is fixed. The seed list is the Phase 1 list.
+This is a theoretical design. It assumes that LIMITATIONS.md and the source nuances listed in Phase 1 have already been addressed. Phase 2 does not refit the science. It specifies how a corrected result becomes immutable: run metadata, versioned policies, functional identity strings, transactional publication, content hashes, and explicit stage states.
 
-Four statuses are kept apart. A stage is ok, degraded, blocked, failed, or skipped. A run is queued, running, publishing, published, blocked, or failed. A view is published, blocked, failed, or skipped. A functional is ok, degraded, withheld, not requested, or unidentified. Unidentified belongs on a fit and on a functional. It is not a stage status. Blocked and failed are terminal. A run is not returned to the queue.
+The portfolio dashboard cache and stdout are not this contract. results/dashboard_cache and a regular expression over printed pounds are assumed retired as a publication mechanism before this phase is treated as the system of record.
 
-Gross and netted are different rows. Regimes are different rows. The key is run, exposure view, functional code, regime, and horizon. Horizons in this release are annual for E, F, G, H, and K, daily for I, and stress_252 for J. There is no total column. A withheld or unrequested value is null, and so is its hex. A computed zero is status ok, value zero, with the hex of that zero. Status ok with a null value is rejected.
+Assumptions taken as already addressed
 
-Identity text is not null. An ok or degraded row carries the formula. A withheld row carries withheld and the reason. The other statuses carry their own name. A failure before the loss panel writes the terminal run and no functional rows. A control block after the panel exists writes a null row for every requested code.
+The Phase 1 catalogue is the only set of functional codes. E, F, H, and J have identity strings. G and K are not_requested in the first release. I is withheld below 50 excesses. A withheld value is null. There is no total. Gross and netted are different rows. The second factor of margin does not exist. Holding, when stored, uses holding_day_count and is zero on fulfilled lines. The golden comparison is value_hex, not a rounded pound from results/expected_result.txt.
 
-Publication is one transaction: functional rows, contrasts, KPI display rows, view rows, stage flags, and run status. If it does not commit, nothing from that set is readable. Science values are double precision. The exact payload is the IEEE-754 hex. A numeric column would not round-trip every float64, and the golden comparison would then fail.
+Scope
 
-Artifacts are addressed by content hash. The hash is the schema and the little-endian column bytes after a stable sort on the primary key. It is not a Parquet footer. The stage input hash includes mode and the site set, so a synthetic artifact cannot satisfy an observed stage. No mart column is named customer_id. Customer identifiers, if the extract contains them, stay in the private order-line object and are dropped before any later artifact.
+In scope: the relational mart, the artifact hash rule, policy versions and signatures, stage and run enums, and the publication transaction.
 
-The dependency lock hash is the SHA-256 of the worker image's canonical requirement list, one name==version line, sorted, with a final newline. It is not the image digest and it is not the seed-list hash. The image digest is written by the worker before publication. It is null while the run is queued.
+Out of scope: HTTP routes, the orchestrator, authentication, warehouse ports, and the client. Phase 3 reads this schema. It does not redefine it.
 
-Retention is part of the contract even though the worker arrives later. Order-line objects expire at 90 days, path samples at 7, aggregates at one year, unless a legal schedule replaces those numbers. Expiry writes an audit row in the same transaction as the delete. After the lines are gone, the run still resolves the hashes, the policy version, and the two code identities. A rebuild is a new run.
+Enums
 
-Phase 2 is complete when a failed publication leaves no functional visible, a withheld I is a null row, G is stored as not requested, and the Phase 1 golden hex can be inserted and read back unchanged.
+Four enums. They are not interchangeable. unidentified is a functional status and a fit-artifact flag. It is not a stage status.
+
+| Enum | Values |
+|---|---|
+| Stage | ok, degraded, blocked, failed, skipped |
+| Run | queued, running, publishing, published, blocked, failed |
+| View | published, blocked, failed, skipped |
+| Functional | ok, degraded, withheld, not_requested, unidentified |
+
+Run transitions: queued to running when a worker takes the lease; running to publishing when publication starts; publishing to published, blocked, or failed inside the publication transaction. blocked and failed are terminal. Nothing returns a run to queued.
+
+Horizons in the first release, and no others: E, F, G, H, K are annual; I is daily; J is stress_252. A later window refit, if built, uses functional code I_WINDOW and horizon window. It is not a row this schema accepts until a later migration.
+
+Identity text, so the column stays not null:
+
+| Functional status | identity |
+|---|---|
+| ok or degraded | The formula string for that code |
+| withheld | withheld:<reason> |
+| not_requested | not_requested |
+| unidentified | unidentified |
+
+A failure before the loss identity writes the terminal run row and no functional rows. A control block after the view has a loss identity writes one null withheld row per requested code. Omitted codes stay not_requested.
+
+Run status across two views: published if at least one requested view published; blocked if none published and at least one view is blocked; failed if every requested view is failed. Gross can be published while netted is blocked. Per-view reason lives on view_result.
+
+Reason catalogue stored as an enum, not free text. Accept-path reasons, which Phase 3 emits and this schema must already allow: RUN_CAPACITY, MART_UNAVAILABLE, RUNNER_UNAVAILABLE, IDEMPOTENCY_CONFLICT. Run, view, or functional: CANCEL_LEDGER_MISSING, DRAGON_RULE_UNSET, CLOCK_PAIR_UNSET, TIMEZONE_UNSET, WINDOW_NOT_CLOSED, RESTORE_RESUBMIT, MISSING_CYCLE_TIME_CLOCK, KPI_SNAPSHOT_MISSING, RECONCILE_FAILED, COVERAGE_BELOW_FLOOR, SNAPSHOT_TOO_LARGE, CORE_COLUMN_MISSING, ZERO_DRAGONS, CV_UNDEFINED, NO_MATCHES, NO_SYNTHETIC_ATTAINMENT, WORKER_LOST, WAREHOUSE_UNAVAILABLE, ARTIFACT_STORE_UNAVAILABLE, FX_EXCLUDED_BELOW_FLOOR, SERIES_TOO_FINE, BREACH_MINUTES_UNCONFIRMED, NO_OBSERVED_SURGE_FEATURE, GPD_FIT_FAILED, XI_GE_ONE, NO_KALMAN_ESTIMATOR.
+
+ZERO_DRAGONS and NO_KALMAN_ESTIMATOR are not how the first release labels G. First-release G is not_requested. Those reasons exist so a later release has a legal value.
+
+Policy
+
+A run binds policy_version. loss_definition, report_currency, and every other science field live on the policy row. They are not caller overrides.
+
+POST of a policy inserts a draft. The document is immutable after insert. A signature inserts one policy_signature row. The only later mutation of a policy row is status: draft to active, and the previous active row to retired, in the same transaction as the signature that completes the set. A retired row does not change. A change of any field is a new policy_version.
+
+Every field has exactly one signature role: kpi_owner, risk_engineer, or commercial_owner. Activation requires all three. A role whose fields did not change sends an explicit copied-forward signature. The bootstrap migration inserts pol-2026-10-01 as active, with three signature rows, signed_by = bootstrap, copied_forward_from null. That migration is not a human approval of open questions. Human approval of the loss definition and intended use is Phase 6.
+
+| Field | Bootstrap value | Owner |
+|---|---|---|
+| loss_definition | preventable_revenue | commercial_owner |
+| holding_rate_annual | 0.25 | commercial_owner |
+| holding_day_count | 365 | commercial_owner |
+| annualisation_days | 365, including in a leap year | commercial_owner |
+| gross_margin | 0.30 | commercial_owner |
+| report_currency | GBP | commercial_owner |
+| j_day_count | 252 | commercial_owner |
+| fx_keep_floor | 0.98 | commercial_owner |
+| breach_minutes | unset. Observed only. Synthetic uses 240 gross and 360 netted. | commercial_owner |
+| breach_minutes_confirmed | false. Observed only. | commercial_owner |
+| dragon_rule | service_class | commercial_owner |
+| dragon_service_classes | empty | commercial_owner |
+| value_threshold | null | commercial_owner |
+| reversal_window_minutes | 30. A quality-count window, not a measured netting rule. | commercial_owner |
+| cycle_time_definition_id | unset | kpi_owner |
+| clock_start_event, clock_end_event | unset | kpi_owner |
+| reconcile_rel, reconcile_abs_floor_min | 0.05, 2 | kpi_owner |
+| sla_abs_tol | 0.01 | kpi_owner |
+| coverage_floor | 0.98 | kpi_owner |
+| regime_high_min, regime_degraded_max | 0.99, 0.95, as levels, not sample quantiles | kpi_owner |
+| sla_band_edges_before_breach | [0, 30, 120] | kpi_owner |
+| gpd_threshold_quantile | 0.99 | risk_engineer |
+| negative_control_abs | null | kpi_owner |
+| surge_flag_column | null | kpi_owner |
+| kalman_noise | fixed | risk_engineer |
+| oidc_site_claim | site_ids | risk_engineer |
+| seed_list | the 32 integers defined in Phase 1 | risk_engineer |
+
+Engineering constants are not policy fields.
+
+Artifact hashes
+
+Workers and later stages read hashes. They do not read a mutable latest key. input_hash is the SHA-256 of the canonical encoding of stage name, exposure view, mode, sorted unique site_ids, policy version, input content hashes, seed, and the pure-function version. Mode and site set are inside the hash, so a synthetic artifact cannot satisfy an observed stage.
+
+Content hashes are not hashes of Parquet footers. Writer version and file timestamps must not change the hash. The hashed bytes are the schema (column name and dtype, in column order), then for each column the little-endian raw values after a stable sort on the artifact primary key. Snapshot key: site_id, order_line_id. Daily panel key: business_date. No statistics block and no created-by metadata are included.
+
+cache_hit is true only when input_hash matches. Customer id, if present on an order-line object, is not a column of any later artifact. No mart column is named customer_id.
+
+Publication transaction
+
+Assemble builds the row set in memory. Publish writes it in one database transaction: functional rows, contrast rows, KPI display rows, view rows, stage flags, and the run status. If the transaction does not commit, no functional is readable. There is no total row to write.
+
+A functional that was not requested, withheld, or unidentified is inserted with value null, value_hex null, and the fixed identity string. A computed zero is status ok, value 0, value_hex of that zero, and a thin-data flag where required. A degraded F or H carries a non-null value. Status ok or degraded with a null value is a schema violation.
+
+Unique key: (run_id, exposure_view, functional_code, regime, horizon).
+
+Relational schema
+
+CI and production use Postgres. Science values are double precision, which is float64. They are not numeric, because numeric cannot round-trip every float64 and the golden comparison would then disagree with a later GET. SQLite is not a CI target. value_hex is the IEEE-754 binary64 hex. value is the same bits rendered for display.
+
+    policy
+      policy_version      text primary key
+      status              text not null          -- draft | active | retired
+      document            jsonb not null
+      created_at          timestamptz not null
+
+    policy_signature
+      policy_version      text not null
+      role                text not null          -- kpi_owner | risk_engineer | commercial_owner
+      signed_by           text not null
+      copied_forward_from text
+      primary key (policy_version, role)
+
+    run
+      run_id              uuid primary key
+      subject             text not null
+      idempotency_key     text not null
+      request_hash        char(64) not null
+      unique (subject, idempotency_key)
+      status              text not null
+      mode                text not null          -- observed | synthetic
+      site_ids            text[] not null
+      window_start        date not null
+      window_end          date not null
+      policy_version      text not null
+      code_sha            text                   -- worker image digest, null while queued
+      api_digest          text not null
+      lock_hash           text not null
+      seed_list_hash      text not null
+      order_snapshot_id   text
+      order_snapshot_hash text
+      kpi_snapshot_id     text
+      kpi_snapshot_hash   text
+      reason              text
+      created_by          text not null
+      created_at          timestamptz not null
+      finished_at         timestamptz
+
+    outbox
+      outbox_id           uuid primary key
+      run_id              uuid not null unique
+      created_at          timestamptz not null
+      drained_at          timestamptz
+
+    view_result
+      run_id, exposure_view
+      status, reconcile_status, coverage_status, reason
+      hit_window_count, hit_lr_uc, hit_lr_uc_hex
+      hit_kupiec_p, hit_kupiec_p_hex
+      hit_lr_ind, hit_lr_ind_hex
+      hit_lr_cc, hit_lr_cc_hex
+      primary key (run_id, exposure_view)
+      check: each statistic is null if and only if its hex is null
+      check: a non-null hit_lr_ind implies a non-null hit_lr_uc
+
+    functional
+      run_id, exposure_view, functional_code, regime, horizon
+      value               double precision null
+      value_hex           text null
+      unit                text
+      identity            text not null
+      status              text not null
+      reason              text
+      flags               jsonb not null
+      primary key (run_id, exposure_view, functional_code, regime, horizon)
+      check: functional_code in (E, F, G, H, I, J, K)
+      check: horizon in (annual, daily, stress_252)
+      check: status in (ok, degraded) implies value and value_hex are not null
+      check: status in (withheld, not_requested, unidentified) implies value and value_hex are null
+
+    contrast
+      run_id, exposure_view, contrast_id
+      estimand, outcome, treatment
+      estimate, estimate_hex, ci_low, ci_high, bootstrap_reps, status
+      partial_subsample, mechanical
+      negative_control, negative_control_gated, negative_control_fired
+      primary key (run_id, exposure_view, contrast_id)
+
+    kpi_display
+      run_id, site_id, metric_code, definition_version
+      value, source, reconcile
+      primary key (run_id, site_id, metric_code, definition_version)
+
+    stage_run
+      run_id, exposure_view, stage, attempt
+      status, reason, flags, cache_hit, input_hash, artifact_hashes
+      primary key (run_id, exposure_view, stage, attempt)
+
+    artifact
+      content_hash        text primary key
+      kind                text                   -- order_line | panel | path_sample | fit
+      uri                 text
+      expires_at          timestamptz
+      tombstone           boolean not null
+
+    audit
+      audit_id, at, actor, action, run_id, result
+      -- no customer_id, no country, no line value, no order-line uri
+
+lock_hash is the lowercase hex SHA-256 of the canonical dependency preimage of the worker image: UTF-8, LF, no BOM, one line per distribution as name==version, sorted by name, final LF. It is not code_sha and it is not the seed-list hash. The API copies it from the release manifest at accept so the column is non-null before a worker starts. code_sha is null while queued. Publication of a terminal status requires code_sha not null.
+
+Retention defaults, enforced later by a worker that writes an audit row in the same transaction as the delete: order-line Parquet 90 days, path samples 7 days, mart aggregates and series bins 1 year. After lines expire, the run still resolves the hashes, the policy version, the code SHA, and the lock hash. A rebuild is a new snapshot and a new run id. Backups must apply tombstones on restore. If the legal schedule differs, retention_schedule_id replaces these numbers. That override is not a silent change.
+
+Grants are specified here and applied in Phase 4. The schema must already be compatible with them: no UPDATE of functional values, no UPDATE of policy.document, insert-only publication.
+
+Exit criteria
+
+Phase 2 is done when a forced mart error during publication leaves no functional visible, a withheld I is a null row with identity withheld:<reason>, G is stored as not_requested, the status checks reject a null ok value and reject a non-null withheld value, gross and netted cannot be written on the same row, and a schema test finds no total column. The golden E and F bits from Phase 1 can be inserted and read back as the same value_hex.
