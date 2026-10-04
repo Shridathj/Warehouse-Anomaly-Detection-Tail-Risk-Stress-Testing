@@ -1,25 +1,111 @@
-Phase 6. Model validation and operational approval
+Warehouse Tail-Risk Production System
+Phase 6 — Model validation and operational approval
 
-This is a theoretical design assuming that LIMITATIONS.md and certain nuances are addressed. The earlier phases make a corrected identity traceable to a snapshot, a policy version, and the code that wrote it. This note states what would have to be true before the loss definition and the intended use are approved. It is not that approval. The recorded pounds remain directional outputs under stated assumptions.
+| Field | Value |
+|---|---|
+| Document | Phase 6 of the theoretical production specification |
+| Date | 2026-10-02 |
+| Status | Theoretical design |
+| Repository | https://github.com/Shridathj/Warehouse-Anomaly-Detection-Tail-Risk-Stress-Testing |
+| Audience | Risk owner, KPI owner, commercial owner, and the engineer who assembles the approval pack |
+| Depends on | Phases 1 through 5, including at least one observed path that can block or publish |
+| Blocks | Nothing in this design. Approval is the last gate. |
 
-The only use that can be approved here is a batch reading of a closed window, for sites the caller may see. Gross and netted stay separate. E, F, H, and J are shown with their identity strings. I appears only when the excess count and the fit allow it. The reader does not add the rows, does not rank them, and does not treat them as a recommendation to hold a service percentile.
+Narration
 
-Outside that use, and not approvable here: a regulatory value-at-risk, a capital number, a live control tower, a write-back to the warehouse system, a treatment effect for reroute or safety stock, and a Hawkes-modulated year. The portfolio mitigation fractions remain arithmetic on a count.
+This is a theoretical design. It assumes that LIMITATIONS.md and the source nuances listed in Phase 1 have already been addressed, and that Phases 2 through 5 have made a corrected identity traceable to a snapshot, a policy version, a code SHA, and a lock hash. Phase 6 does not add a functional and does not blend the rows. It states what would have to be true before anyone approves the loss definition and the intended use.
 
-History, before a pack is assembled, is at least four closed quarters on the first site. Each quarter is its own run, bound to the snapshot hashes and the policy then in force. Both views are attempted. A netted block for a missing cancel ledger is a recorded outcome. It is not replaced with the public-file max-pick and then called history. A quarter that blocked for a missing clock does not count as published. A change of seed list or of the holding divisor is a new policy version and a new comparison. Restore and rollback have been exercised in the same window. An in-flight run at restore was marked for resubmission and was not resumed.
+This document is not that approval. The portfolio pounds remain directional outputs under stated assumptions. They are not operational forecasts, not a capital number, and not a model approved for external reporting. A large ES is a result. It is not evidence that the model is approved.
 
-Four quarters support a sensitivity narrative. They do not create power. Coverage tests on one year of weekly windows remain weak, and the pack says so.
+Assumptions taken as already addressed
 
-Uncertainty is the spread across the stored seed list: minimum, tenth, ninetieth, and maximum, beside the mean. That spread is not a second F. The single seed 314159 remains the reproducibility lock. Each published quarter also records the dragon count, the active-day count, whether the coefficient-of-variation cap bound, the currency exclusion count, the coverage ratios, and the flags for a thin panel, a failed seed, and serial dependence. Dependence does not change the functionals. It is disclosed because extreme-value standard errors under dependence are optimistic. I, when withheld, is reported with the excess count. It is not imputed. G is reported as not requested. No interval is drawn around a sum of functionals, because the sum is not a column.
+The engine no longer prints Kupiec p = 1 at zero violations, no longer double-counts margin, no longer annualises on 373 days, and no longer treats assigned delays as warehouse telemetry. Quantity EVT is a diagnosis. Hawkes on the minute wall is a known negative result and does not enter E, F, or H. G is not_requested until an estimator exists. I is withheld below 50 excesses. The client reads the mart and shows identity strings. Observed runs block when the clock, the ledger, or the window is not fit, rather than filling the gap.
 
-The calibration object is the hit test: a sum of line loss against an empirical rolling sum of the same column. F and H are not that test. The pack reports the window count, the unconditional likelihood ratio and its tail, including the zero-hit case, and the independence and conditional-coverage statistics only when they are identified. It states the loss definition, so a reader can see whether holding sat on both sides. It does not report a p-value of 1, and it does not use the words calibrated or stable. With about 34 windows at 5 percent, zero exceptions have expectation near 1.7. Zero exceptions are unsurprising. The portfolio hit counts are not acceptance numbers. Calibration is not described as observed until two closed quarters have been scored on the civil-date grid. If independence is unidentified in every quarter, the pack says there is no observation. It does not borrow a portfolio p-value.
+Intended use, the only use this phase can approve
 
-Sensitivity is a new run under a new policy version, not an edit of the original row. The holding divisor 365 is compared with 1. E and F do not move, because they exclude holding. Line loss and the hit test move only when holding is in the loss definition. Margin is compared with the commercial owner's alternate; E, F, and H scale, they are not re-estimated. The confirmed cycle-time cut is compared with the unconfirmed sampler cuts of 240 and 360, to show how many dragons the wrong cut would mark. A value-threshold dragon rule, if run, is marked mechanical. The stress-day count 252 is compared with 365. Neither is an expectation. Regime cuts are compared with the owner's replacement, and empty slices are reported as empty. No sensitivity multiplies E by a mitigation fraction.
+The intended use, if approved, is a batch historic computation over a closed window for sites the caller may see: separate gross and netted exposure views, and the functionals E, F, H, and J, each with an identity string, plus I only when its quality rules pass. The reader uses them as named answers to different questions. The reader does not add them, does not rank them, and does not treat them as a recommendation to hold a service percentile.
 
-Approval is a signature on the pack. The commercial owner signs the loss definition, the margin, the holding divisor, and the stress-day count for the stated use. The KPI owner signs the clock pair, the reconcile tolerances, the coverage floor, and the regime cuts actually used. The risk engineer signs the seed list, the withholding rules, and the statement that I and the hit test were not asked to do more than their definitions allow. A missing signature does not approve. Migration signatures on the bootstrap policy do not count. Approval does not rewrite published runs. A later change of loss definition is a new policy, a new run, and a new pack.
+Out of intended use, and not approvable by this phase: a regulatory market-risk VaR, a capital number, a live control tower, a write-back to the WMS or the ERP, a treatment effect for reroute or safety stock, and a Hawkes-modulated year. Mitigation fractions from the portfolio Kalman print stay out of the mart.
 
-Beside the signatures, and not a substitute for them: the image was built in CI, rollback and restore have been exercised, a trace carries the run identity, and the security and failure-path tests pass. An incident is a run that cannot compute, or a dependency that cannot accept work. A large expected shortfall is a result.
+Operational history
 
-Approval does not mean a 99th-to-95th service effect has been estimated from telemetry. On the synthetic path that language is a configured delay band. On the observed path it is a pair of attainment levels, and days between them sit in neither slice. It does not mean clustering has been shown to be small. It does not mean a daily fit with four excesses is an annual 95 percent value-at-risk. It expires for a new site, a new clock, or a new loss definition.
+Approval requires an operational history, not a single synthetic seed.
 
-Phase 6 is complete when the pack exists and the three roles have signed it or recorded a refusal. A refusal is a finished outcome. No observed figure is described as approved without the signatures.
+Minimum history before the pack is assembled:
+
+- At least four closed quarters on the first site, each a separate run id, each bound to the snapshot hashes and the policy version in force for that window.
+- Both exposure views attempted on each quarter. A netted block for CANCEL_LEDGER_MISSING is a recorded outcome. It is not filled with the UCI max-pick and then described as history.
+- No observed run in the history used a log-normal fill-in. A block for MISSING_CYCLE_TIME_CLOCK does not count as a published quarter.
+- Seed-list hash and lock hash stable within a policy version. A change of seed list or of holding_day_count is a new policy version and starts a new comparison, not an edit of the old rows.
+- Restore drill and rollback drill exercised in the history window. An in-flight run during restore was marked RESTORE_RESUBMIT and resubmitted. It was not resumed.
+
+Four quarters is the minimum for a sensitivity narrative. It is not a claim of statistical power. Coverage tests on one year of weekly windows remain low-power. The pack says so.
+
+Uncertainty
+
+F and H are reported with the seed spread already defined: min, p10, p90, and max across the 32 seeds, beside the mean. Those are not a second F. A one-seed golden remains the reproducibility lock. It is not the uncertainty statement.
+
+A published quarter also records: n_dragons, active-day count, whether cv_cap bound, fx_excluded_lines, coverage ratios, and the flags desk_unfit, seed_failed, and serial_dependence. serial_dependence does not change E through J. It is disclosed because Hill, GEV, and POT standard errors under dependence are optimistic, and because the hit test is not a theorem.
+
+I, when withheld, is reported as withheld with the excess count. It is not imputed. G is reported as not_requested. An unidentified Hawkes fit may be stored. It is not converted into a sterling interval.
+
+There is no interval that adds E to H. There is no interval around a blended number, because the blended number does not exist.
+
+Calibration
+
+The hit test compares a sum of line_loss to an empirical rolling VaR of that same column. It is the only calibration object in this design. F and H are not the hit-test VaR and are not calibrated by the hit count.
+
+What is reported, for each published view and quarter:
+
+- hit_window_count
+- hit_lr_uc and hit_kupiec_p, including the k = 0 chi-square tail
+- hit_lr_ind and hit_lr_cc only when independence is identified
+- the loss_definition in force, so a reader can see whether holding was on both sides
+
+What is not reported as calibration: a p-value of 1, the words calibrated or stable, the portfolio counts 0/34 and 2/33, and any comparison of margin-adjusted dragon revenue with a test loss that used a different definition. With about 34 windows at p = 0.05, zero exceptions has expectation about 1.7. Zero exceptions is unsurprising. The pack states the expected count and does not call a non-rejection a pass.
+
+Calibration is not accepted until at least two closed quarters have a scored window schedule under the production grid (civil dates, step 7, purge gap of 3 dates, no 50,000-line drop, no delay redraw). If independence is unidentified in every quarter, the pack says the independence test has no observation. It does not borrow the portfolio p-value.
+
+Sensitivity
+
+The pack includes a documented sensitivity, each as a new run id under a new policy version or an explicit comparator flag. Results are not written back onto the original run.
+
+| Lever | Comparator | What the reader is told |
+|---|---|---|
+| holding_day_count | 365 against 1 | The portfolio identity is about 365 times a one-day APR accrual. E and F do not move, because they exclude holding. line_loss and the hit test move only under preventable_revenue_plus_holding. |
+| gross_margin | 0.30 against the commercial owner's alternate | E, F, and H scale with g. They are not re-estimated. |
+| breach_minutes | the confirmed full-cycle cut against the unconfirmed 240/360 lateness cuts | The lateness cuts are not a silent default. The comparison shows how many dragons the wrong cut would mark unfulfilled. |
+| dragon rule | service_class against a value threshold, if the owner runs both | The value-threshold contrast is mechanical. |
+| j_day_count | 252 against 365 | J is a stress exhibit. Neither value is an expectation. |
+| regime cuts | 0.99 / 0.95 against the owner's replacement | all is not high plus degraded. Empty slices are reported as empty. |
+| seed | the 32-seed mean against seed 314159 | The single seed is the golden lock, not the production uncertainty. |
+
+No sensitivity multiplies E by the portfolio mitigation fractions 0.70, 0.55, 0.15, or 0.00. Those remain arithmetic on a count, not treatment effects.
+
+Approval
+
+Approval is a signature on a pack, not a deploy. The pack contains: the intended-use statement, the four-quarter history or an explicit waiver that names the missing quarter, the seed spread, the calibration table, the sensitivity runs, the open blocks (clock, ledger, breach confirmation, regime cuts), and the statement that G and K were not requested.
+
+Three signatures, the same roles as the policy, each on the pack rather than on a field:
+
+- commercial_owner approves the loss definition, the margin, the holding divisor, and j_day_count for the stated use
+- kpi_owner approves the clock pair, the reconcile tolerances, the coverage floor, and the regime cuts actually used
+- risk_engineer approves the seed list, the withholding rules, and the statement that I and the hit test were not asked to do more than their definitions allow
+
+A missing signature does not approve. Bootstrap signatures on pol-2026-10-01 do not count. Approval does not rewrite published runs. A later change of loss definition is a new policy version, a new run, and a new pack.
+
+Operational checks that sit beside the signatures, and are not a substitute for them: the digest was built by CI, rollback to the previous worker digest has been exercised, restore has been exercised including the expired-object check, a trace with run_id is present, security tests pass, and failure-path tests pass. An incident remains a run that cannot compute, or a dependency that cannot accept work. There is no alert on the sterling value.
+
+What approval does not mean
+
+Approval does not mean the 99th-to-95th service story has been estimated from telemetry. On the synthetic path that story is a configured delay band. On the observed path it is a pair of attainment levels the KPI owner set, and unlabelled days sit in neither slice.
+
+Approval does not mean Hawkes clustering has been shown to be small. The E versus G gap is a difference of counts. G is not in the approved set until a later design adds an estimator and a new pack.
+
+Approval does not mean a one-year daily GPD with four excesses is a 95 percent VaR. I remains a conditional daily mean above u, and only when at least 50 excesses exist.
+
+Approval expires for a new site, a new clock definition, or a new loss definition. It does not travel with the image digest alone.
+
+Exit criteria
+
+Phase 6 is done when the pack exists, the three roles have signed it or have recorded a refusal, and the production client shows the approved identity strings without a total. A refusal is a complete outcome. The theoretical design does not require the signatures to be granted. It requires that no observed sterling number be described as approved without them.
